@@ -16,6 +16,11 @@ if (process.env.R2_PUBLIC_BASE_URL) {
 
 const nextConfig: NextConfig = {
   images: { remotePatterns },
+  async redirects() {
+    // El catálogo vive en /products; /productos (sin slug) se redirige ahí.
+    // /productos/[slug] sigue siendo la ficha de cada producto.
+    return [{ source: "/productos", destination: "/products", permanent: false }];
+  },
 };
 
 export default nextConfig;

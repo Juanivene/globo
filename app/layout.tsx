@@ -16,6 +16,11 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: "Globo Arg",
   description: "Productos importados de USA, a tu puerta.",
+  openGraph: {
+    title: "Globo Arg",
+    description: "Productos importados de USA, a tu puerta.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -30,7 +35,14 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         {children}
-        <Toaster richColors position="top-center" />
+        <Toaster
+          richColors
+          position="top-center"
+          toastOptions={{
+            className: "font-sans",
+            style: { borderRadius: "0.75rem" },
+          }}
+        />
       </body>
     </html>
   );

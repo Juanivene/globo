@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Pencil, Trash2 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { useConfirm } from "@/components/ui/ConfirmProvider";
 
 export interface ProductRow {
   id: string;
@@ -18,6 +19,7 @@ export interface ProductRow {
 
 export function ProductsTable({ initial }: { initial: ProductRow[] }) {
   const router = useRouter();
+  const confirm = useConfirm();
 
   async function toggleEnabled(product: ProductRow) {
     try {
@@ -32,8 +34,13 @@ export function ProductsTable({ initial }: { initial: ProductRow[] }) {
   }
 
   async function handleDelete(product: ProductRow) {
-    if (!confirm(`¿Eliminar "${product.title}"? Esta acción no se puede deshacer.`))
-      return;
+    const ok = await confirm({
+      title: `¿Eliminar "${product.title}"?`,
+      description: "Esta acción no se puede deshacer.",
+      confirmLabel: "Eliminar",
+      variant: "danger",
+    });
+    if (!ok) return;
     try {
       const res = await fetch(`/api/admin/products/${product.id}`, {
         method: "DELETE",
@@ -47,7 +54,9 @@ export function ProductsTable({ initial }: { initial: ProductRow[] }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-xl bg-white shadow-sm">
+    // overflow-x-auto (not overflow-hidden): lets the table scroll within its
+    // own card on narrow phones instead of stretching the whole admin layout.
+    <div className="overflow-x-auto rounded-xl bg-white shadow-sm">
       <table className="w-full text-sm">
         <thead className="border-b border-border bg-black/[0.02] text-left text-xs uppercase text-muted">
           <tr>
@@ -98,7 +107,7 @@ export function ProductsTable({ initial }: { initial: ProductRow[] }) {
               <td className="px-4 py-3 text-right">
                 <Link
                   href={`/admin/productos/${product.id}`}
-                  className="mr-2 inline-block text-glow hover:opacity-70"
+                  className="mr-2 inline-block text-link hover:opacity-70"
                 >
                   <Pencil size={16} />
                 </Link>

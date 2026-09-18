@@ -25,12 +25,17 @@ export async function calculateShipping(
   });
   if (!config) throw new ShippingError("PROVINCE_NOT_CONFIGURED");
 
-  const rule = await prisma.shippingSurchargeRule.findFirst({
+  // Ordenadas de mayor a menor umbral: la primera que el peso supera es el
+  // tramo más específico aplicable. Los recargos no son acumulativos — se
+  // aplica un único tramo, nunca la suma de varios.
+  const rules = await prisma.shippingSurchargeRule.findMany({
     where: { active: true },
+    orderBy: { thresholdKg: "desc" },
   });
+  const rule = rules.find((r) => totalWeightKg > Number(r.thresholdKg));
 
   let cost = Number(config.basePrice);
-  if (rule && totalWeightKg > Number(rule.thresholdKg)) {
+  if (rule) {
     cost += cost * (Number(rule.surchargePct) / 100);
   }
 

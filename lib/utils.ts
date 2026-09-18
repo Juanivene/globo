@@ -17,6 +17,14 @@ export function slugify(text: string): string {
     .replace(/^-|-$/g, "");
 }
 
+/**
+ * Index for the `stagger-rise` entrance delay, capped so long lists never leave
+ * later items invisible for seconds. Past the cap everything lands together.
+ */
+export function staggerIndex(index: number, max = 11): number {
+  return Math.min(index, max);
+}
+
 export function formatCurrency(value: number | string): string {
   const n = typeof value === "string" ? Number(value) : value;
   return new Intl.NumberFormat("es-AR", {

@@ -1,61 +1,79 @@
-import { prisma } from "@/lib/prisma";
-import { CatalogControls } from "@/components/shop/CatalogControls";
-import { ProductGrid } from "@/components/shop/ProductGrid";
-import type { Prisma } from "@/app/generated/prisma/client";
+import { Suspense } from "react";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { CatalogResults } from "@/components/shop/CatalogResults";
+import { PageTransition } from "@/components/shop/PageTransition";
+import { ShopHero } from "@/components/shop/ShopHero";
+import { ShippingBand } from "@/components/shop/ShippingBand";
+import { WhatsAppBand } from "@/components/shop/WhatsAppBand";
+import { ProductGridSkeleton } from "@/components/ui/Skeleton";
+import { latest } from "@/lib/content/site";
 
-export default async function ShopHomePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string; seccion?: string }>;
-}) {
-  const { q, seccion } = await searchParams;
+/**
+ * Dinámica a propósito: muestra los últimos productos cargados. Sin esto Next la
+ * prerenderiza en el build y un producto nuevo del admin no aparecería.
+ */
+export const dynamic = "force-dynamic";
 
-  const where: Prisma.ProductWhereInput = { enabled: true };
+/** Cuántos productos recientes se muestran en la portada. */
+const LATEST_COUNT = 8;
 
-  if (q) {
-    where.OR = [
-      { title: { contains: q, mode: "insensitive" } },
-      { description: { contains: q, mode: "insensitive" } },
-    ];
-  }
-
-  if (seccion) {
-    where.sections = { some: { section: { slug: seccion } } };
-  }
-
-  const [products, sections] = await Promise.all([
-    prisma.product.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      include: { images: { orderBy: { position: "asc" }, take: 1 } },
-    }),
-    prisma.section.findMany({ orderBy: { name: "asc" } }),
-  ]);
-
+/**
+ * Home: una presentación corta. Portada, los últimos productos cargados (con
+ * salida a `/products` para ver todo), cómo funciona y contacto.
+ * El buscador y el filtro por sección viven en `/products`.
+ */
+export default function ShopHomePage() {
   return (
-    <div className="space-y-6">
-      <div className="rounded-2xl bg-primary px-6 py-8 text-center sm:py-10">
-        <h1 className="font-heading text-2xl font-bold text-white sm:text-3xl">
-          Productos importados, directo a tu puerta
-        </h1>
-        <p className="mt-2 text-sm text-white/70">
-          Perfumes, gadgets y más, traídos de USA.
-        </p>
+    <PageTransition>
+      <div className="space-y-10 sm:space-y-12">
+        <ShopHero />
+
+        <section aria-labelledby="latest-title" className="space-y-5">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-bronze">
+                {latest.eyebrow}
+              </p>
+              <h2
+                id="latest-title"
+                className="font-heading text-2xl font-bold text-primary"
+              >
+                {latest.title}
+              </h2>
+            </div>
+            <Link
+              href="/products"
+              transitionTypes={["nav-forward"]}
+              className="group inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-link hover:underline"
+            >
+              {latest.cta}
+              <ArrowRight
+                size={16}
+                className="transition-transform duration-200 group-hover:translate-x-0.5"
+              />
+            </Link>
+          </div>
+
+          <Suspense fallback={<ProductGridSkeleton count={LATEST_COUNT} />}>
+            <CatalogResults limit={LATEST_COUNT} />
+          </Suspense>
+
+          <div className="flex justify-center pt-1">
+            <Link
+              href="/products"
+              transitionTypes={["nav-forward"]}
+              className="sheen inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-text-invert transition-[background-color,transform] duration-200 hover:bg-primary-light active:scale-[0.98]"
+            >
+              {latest.ctaLong} <ArrowRight size={16} />
+            </Link>
+          </div>
+        </section>
+
+        <ShippingBand />
+
+        <WhatsAppBand />
       </div>
-
-      <CatalogControls
-        sections={sections.map((s) => ({ slug: s.slug, name: s.name }))}
-      />
-
-      <ProductGrid
-        products={products.map((p) => ({
-          id: p.id,
-          slug: p.slug,
-          title: p.title,
-          price: p.price.toString(),
-          imageUrl: p.images[0]?.url,
-        }))}
-      />
-    </div>
+    </PageTransition>
   );
 }

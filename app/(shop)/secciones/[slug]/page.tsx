@@ -1,7 +1,12 @@
+import { Suspense, ViewTransition } from "react";
 import { notFound } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { CatalogControls } from "@/components/shop/CatalogControls";
-import { ProductGrid } from "@/components/shop/ProductGrid";
+import { CatalogResults } from "@/components/shop/CatalogResults";
+import { PageTransition } from "@/components/shop/PageTransition";
+import { ProductGridSkeleton } from "@/components/ui/Skeleton";
 
 export default async function SectionPage({
   params,
@@ -17,31 +22,44 @@ export default async function SectionPage({
 
   if (!section) notFound();
 
-  const products = await prisma.product.findMany({
-    where: { enabled: true, sections: { some: { section: { slug } } } },
-    orderBy: { createdAt: "desc" },
-    include: { images: { orderBy: { position: "asc" }, take: 1 } },
-  });
-
   return (
-    <div className="space-y-6">
-      <h1 className="font-heading text-2xl font-bold text-primary">
-        {section.name}
-      </h1>
+    <PageTransition>
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <Link
+            href="/products"
+            transitionTypes={["nav-back"]}
+            className="group inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-primary"
+          >
+            <ArrowLeft
+              size={16}
+              className="transition-transform duration-200 group-hover:-translate-x-0.5"
+            />
+            Volver al catálogo
+          </Link>
+          <h1 className="animate-rise font-heading text-2xl font-bold text-primary">
+            {section.name}
+          </h1>
+        </div>
 
-      <CatalogControls
-        sections={sections.map((s) => ({ slug: s.slug, name: s.name }))}
-      />
+        <CatalogControls
+          sections={sections.map((s) => ({ slug: s.slug, name: s.name }))}
+          activeSection={slug}
+        />
 
-      <ProductGrid
-        products={products.map((p) => ({
-          id: p.id,
-          slug: p.slug,
-          title: p.title,
-          price: p.price.toString(),
-          imageUrl: p.images[0]?.url,
-        }))}
-      />
-    </div>
+        <Suspense
+          key={slug}
+          fallback={
+            <ViewTransition exit="slide-down" default="none">
+              <ProductGridSkeleton />
+            </ViewTransition>
+          }
+        >
+          <ViewTransition enter="slide-up" default="none">
+            <CatalogResults seccion={slug} />
+          </ViewTransition>
+        </Suspense>
+      </div>
+    </PageTransition>
   );
 }

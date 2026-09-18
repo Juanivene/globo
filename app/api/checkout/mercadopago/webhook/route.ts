@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { WebhookSignatureValidator, InvalidWebhookSignatureError } from "mercadopago";
-import { prisma } from "@/lib/prisma";
 import { mpPayment } from "@/lib/mercadopago";
-import { sendOrderStatusEmail, sendNewSaleAdminEmail } from "@/lib/email";
+import { confirmDraftFromPayment } from "@/lib/checkout/confirmMercadoPagoPayment";
 
 export async function POST(req: NextRequest) {
   const url = new URL(req.url);
@@ -41,38 +40,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
-  const orderId = payment.external_reference;
-  if (!orderId) return NextResponse.json({ ok: true });
-
-  const order = await prisma.order.findUnique({ where: { id: orderId } });
-  if (!order) return NextResponse.json({ ok: true });
-
-  if (payment.status === "approved" && order.status === "PENDIENTE") {
-    const updated = await prisma.order.update({
-      where: { id: orderId },
-      data: { status: "CONFIRMADO", mpPaymentId: String(payment.id) },
-    });
-
-    try {
-      await Promise.all([
-        sendOrderStatusEmail({
-          orderId: updated.id,
-          status: "CONFIRMADO",
-          customerName: updated.customerName,
-          customerEmail: updated.customerEmail,
-          total: updated.total.toString(),
-        }),
-        sendNewSaleAdminEmail({
-          orderId: updated.id,
-          customerName: updated.customerName,
-          customerEmail: updated.customerEmail,
-          customerPhone: updated.customerPhone,
-          total: updated.total.toString(),
-        }),
-      ]);
-    } catch (err) {
-      console.error("Failed to send order confirmation emails", err);
-    }
+  try {
+    await confirmDraftFromPayment(payment);
+  } catch (err) {
+    console.error("Failed to confirm checkout draft from webhook payment", err);
   }
 
   return NextResponse.json({ ok: true });

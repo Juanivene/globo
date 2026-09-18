@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
 import { productSchema } from "@/lib/validations/product";
 import { slugify } from "@/lib/utils";
+import type { ArgentinaProvince } from "@/app/generated/prisma/enums";
 
 export async function GET() {
   const { response } = await requireAdmin();
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { sectionIds, ...data } = parsed.data;
+  const { sectionIds, freeShippingProvinces, ...data } = parsed.data;
 
   const baseSlug = slugify(data.title);
   let slug = baseSlug;
@@ -37,6 +38,7 @@ export async function POST(req: NextRequest) {
   const product = await prisma.product.create({
     data: {
       ...data,
+      freeShippingProvinces: freeShippingProvinces as ArgentinaProvince[],
       slug,
       sections: {
         create: sectionIds.map((sectionId) => ({ sectionId })),

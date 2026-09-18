@@ -29,3 +29,19 @@ export async function PATCH(
 
   return NextResponse.json(order);
 }
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { response } = await requireAdmin();
+  if (response) return response;
+  const { id } = await params;
+
+  const order = await prisma.order.findUnique({ where: { id } });
+  if (!order) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
+
+  await prisma.order.delete({ where: { id } });
+
+  return NextResponse.json({ ok: true });
+}

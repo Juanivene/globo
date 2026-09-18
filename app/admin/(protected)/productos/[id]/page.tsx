@@ -45,6 +45,8 @@ export default async function EditProductPage({
           weightKg: product.weightKg.toString(),
           enabled: product.enabled,
           sectionIds: product.sections.map((s) => s.sectionId),
+          freeShipping: product.freeShipping,
+          freeShippingProvinces: product.freeShippingProvinces,
         }}
       />
     </div>

@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@/app/generated/prisma/client";
 import { checkoutSchema } from "@/lib/validations/checkout";
 import { calculateShipping, totalWeightKgForItems, ShippingError } from "@/lib/shipping/calc";
+import { isCartFreeShipping } from "@/lib/shipping/freeShipping";
+import type { CheckoutDraftPayload } from "@/lib/checkout/confirmMercadoPagoPayment";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -53,32 +56,67 @@ export async function POST(req: NextRequest) {
     throw err;
   }
 
+  const shippingCost = isCartFreeShipping(products, quote.province) ? 0 : quote.shippingCost;
+
   const itemsSubtotal = lineItems.reduce(
     (sum, i) => sum + Number(i.priceSnapshot) * i.quantity,
     0
   );
-  const total = itemsSubtotal + quote.shippingCost;
+  const total = itemsSubtotal + shippingCost;
 
-  const order = await prisma.order.create({
-    data: {
-      customerName: customer.customerName,
-      customerEmail: customer.customerEmail,
-      customerPhone: customer.customerPhone,
-      address: customer.address,
-      postalCode: customer.postalCode,
-      province: quote.province,
-      paymentMethod: customer.paymentMethod,
-      shippingCost: quote.shippingCost,
-      itemsSubtotal,
-      total,
-      status: "PENDIENTE",
-      items: { create: lineItems },
-    },
+  if (customer.paymentMethod === "TRANSFERENCIA") {
+    const order = await prisma.order.create({
+      data: {
+        customerName: customer.customerName,
+        customerEmail: customer.customerEmail,
+        customerPhone: customer.customerPhone,
+        address: customer.address,
+        postalCode: customer.postalCode,
+        province: quote.province,
+        paymentMethod: customer.paymentMethod,
+        shippingCost,
+        itemsSubtotal,
+        total,
+        status: "PENDIENTE",
+        items: { create: lineItems },
+      },
+    });
+
+    return NextResponse.json({
+      orderId: order.id,
+      total: total.toString(),
+      paymentMethod: order.paymentMethod,
+    });
+  }
+
+  // MERCADO_PAGO: no persistimos un Order todavía — solo un draft. El Order
+  // real recién se crea cuando MP confirma el pago (ver confirmMercadoPagoPayment).
+  const payload: CheckoutDraftPayload = {
+    customerName: customer.customerName,
+    customerEmail: customer.customerEmail,
+    customerPhone: customer.customerPhone,
+    address: customer.address,
+    postalCode: customer.postalCode,
+    province: quote.province,
+    itemsSubtotal,
+    shippingCost,
+    total,
+    lineItems: lineItems.map((i) => ({
+      productId: i.productId,
+      titleSnapshot: i.titleSnapshot,
+      priceSnapshot: Number(i.priceSnapshot),
+      quantity: i.quantity,
+      weightKgSnapshot: Number(i.weightKgSnapshot),
+    })),
+  };
+
+  const draft = await prisma.checkoutDraft.create({
+    data: { payload: payload as unknown as Prisma.InputJsonValue },
   });
 
   return NextResponse.json({
-    orderId: order.id,
+    draftId: draft.id,
     total: total.toString(),
-    paymentMethod: order.paymentMethod,
+    paymentMethod: customer.paymentMethod,
   });
 }

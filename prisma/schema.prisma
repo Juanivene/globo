@@ -20,6 +20,12 @@ enum OrderStatus {
   CANCELADO
 }
 
+enum DraftStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+}
+
 enum ArgentinaProvince {
   BUENOS_AIRES
   CABA
@@ -63,6 +69,9 @@ model Product {
   price       Decimal  @db.Decimal(12, 2)
   weightKg    Decimal  @db.Decimal(8, 3)
   enabled     Boolean  @default(true)
+
+  freeShipping          Boolean             @default(false)
+  freeShippingProvinces ArgentinaProvince[]  @default([])
 
   images     ProductImage[]
   sections   ProductSection[]
@@ -162,5 +171,16 @@ model ShippingSurchargeRule {
   surchargePct Decimal @db.Decimal(5, 2)
   active       Boolean @default(true)
 
+  updatedAt DateTime @updatedAt
+}
+
+model CheckoutDraft {
+  id             String      @id @default(cuid())
+  payload        Json
+  mpPreferenceId String?     @unique
+  status         DraftStatus @default(PENDING)
+  orderId        String?     @unique
+
+  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

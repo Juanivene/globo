@@ -5,6 +5,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Trash2, Upload } from "lucide-react";
+import { uploadProductImage } from "@/lib/uploadProductImage";
+import { useConfirm } from "@/components/ui/ConfirmProvider";
 
 export interface ProductImageRow {
   id: string;
@@ -20,6 +22,7 @@ export function ImageUploader({
   initialImages: ProductImageRow[];
 }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const inputRef = useRef<HTMLInputElement>(null);
   const [images, setImages] = useState(initialImages);
   const [uploading, setUploading] = useState(false);
@@ -30,34 +33,7 @@ export function ImageUploader({
 
     for (const file of Array.from(files)) {
       try {
-        const presignRes = await fetch(
-          `/api/admin/products/${productId}/images`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ contentType: file.type }),
-          }
-        );
-        if (!presignRes.ok) throw new Error();
-        const { uploadUrl, key, publicUrl } = await presignRes.json();
-
-        const putRes = await fetch(uploadUrl, {
-          method: "PUT",
-          headers: { "Content-Type": file.type },
-          body: file,
-        });
-        if (!putRes.ok) throw new Error();
-
-        const confirmRes = await fetch(
-          `/api/admin/products/${productId}/images/confirm`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ key, url: publicUrl }),
-          }
-        );
-        if (!confirmRes.ok) throw new Error();
-        const image = await confirmRes.json();
+        const image = await uploadProductImage(file, productId);
         setImages((prev) => [...prev, image]);
       } catch {
         toast.error(`No se pudo subir ${file.name}`);
@@ -70,7 +46,12 @@ export function ImageUploader({
   }
 
   async function handleDelete(image: ProductImageRow) {
-    if (!confirm("¿Eliminar esta imagen?")) return;
+    const ok = await confirm({
+      title: "¿Eliminar esta imagen?",
+      confirmLabel: "Eliminar",
+      variant: "danger",
+    });
+    if (!ok) return;
     try {
       const res = await fetch(
         `/api/admin/products/${productId}/images/${image.id}`,
@@ -78,6 +59,7 @@ export function ImageUploader({
       );
       if (!res.ok) throw new Error();
       setImages((prev) => prev.filter((i) => i.id !== image.id));
+      toast.success("Imagen eliminada");
       router.refresh();
     } catch {
       toast.error("No se pudo eliminar la imagen");
@@ -110,7 +92,7 @@ export function ImageUploader({
         <button
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
-          className="flex aspect-square flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-border text-muted transition-colors hover:border-glow hover:text-glow disabled:opacity-50 cursor-pointer"
+          className="flex aspect-square flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-border text-muted transition-colors hover:border-link hover:text-link disabled:opacity-50 cursor-pointer"
         >
           <Upload size={20} />
           <span className="text-xs">{uploading ? "Subiendo..." : "Subir"}</span>
