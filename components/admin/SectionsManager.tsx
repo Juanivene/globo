@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Pencil, Trash2, Plus, X } from "lucide-react";
+import { Pencil, Trash2, Plus, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Input";
+import { useConfirm } from "@/components/ui/ConfirmProvider";
 
 export interface SectionRow {
   id: string;
@@ -16,10 +17,18 @@ export interface SectionRow {
 
 export function SectionsManager({ initial }: { initial: SectionRow[] }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [editing, setEditing] = useState<SectionRow | null>(null);
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
+  const [query, setQuery] = useState("");
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return initial;
+    return initial.filter((s) => s.name.toLowerCase().includes(q));
+  }, [initial, query]);
 
   function openCreate() {
     setName("");
@@ -62,7 +71,16 @@ export function SectionsManager({ initial }: { initial: SectionRow[] }) {
   }
 
   async function handleDelete(section: SectionRow) {
-    if (!confirm(`¿Eliminar la sección "${section.name}"?`)) return;
+    const ok = await confirm({
+      title: `¿Eliminar la sección "${section.name}"?`,
+      description:
+        section._count.products > 0
+          ? `Se va a desvincular de ${section._count.products} producto(s).`
+          : undefined,
+      confirmLabel: "Eliminar",
+      variant: "danger",
+    });
+    if (!ok) return;
     try {
       const res = await fetch(`/api/admin/sections/${section.id}`, {
         method: "DELETE",
@@ -82,6 +100,30 @@ export function SectionsManager({ initial }: { initial: SectionRow[] }) {
         <Button onClick={openCreate} size="sm">
           <Plus size={16} /> Nueva sección
         </Button>
+      </div>
+
+      <div className="relative max-w-sm">
+        <Search
+          size={16}
+          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted"
+        />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Buscar sección..."
+          aria-label="Buscar sección"
+          className="w-full rounded-full border border-border bg-card py-2 pl-10 pr-9 text-sm shadow-(--shadow-card) outline-none transition-[border-color,box-shadow] duration-200 focus:border-link focus:ring-2 focus:ring-link/25"
+        />
+        {query && (
+          <button
+            type="button"
+            onClick={() => setQuery("")}
+            aria-label="Limpiar búsqueda"
+            className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer rounded-full p-1 text-muted transition-colors hover:bg-black/5 hover:text-text"
+          >
+            <X size={14} />
+          </button>
+        )}
       </div>
 
       {creating && (
@@ -108,7 +150,10 @@ export function SectionsManager({ initial }: { initial: SectionRow[] }) {
         </form>
       )}
 
-      <div className="overflow-hidden rounded-xl bg-white shadow-sm">
+      {/* overflow-x-auto (not overflow-hidden): lets the table scroll within
+          its own card on narrow phones instead of stretching the whole
+          admin layout. */}
+      <div className="overflow-x-auto rounded-xl bg-white shadow-sm">
         <table className="w-full text-sm">
           <thead className="border-b border-border bg-black/[0.02] text-left text-xs uppercase text-muted">
             <tr>
@@ -119,7 +164,7 @@ export function SectionsManager({ initial }: { initial: SectionRow[] }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {initial.map((section) => (
+            {filtered.map((section) => (
               <tr key={section.id}>
                 <td className="px-4 py-3 font-medium text-text">
                   {section.name}
@@ -131,7 +176,7 @@ export function SectionsManager({ initial }: { initial: SectionRow[] }) {
                 <td className="px-4 py-3 text-right">
                   <button
                     onClick={() => openEdit(section)}
-                    className="mr-2 text-glow hover:opacity-70 cursor-pointer"
+                    className="mr-2 text-link hover:opacity-70 cursor-pointer"
                   >
                     <Pencil size={16} />
                   </button>
@@ -144,10 +189,12 @@ export function SectionsManager({ initial }: { initial: SectionRow[] }) {
                 </td>
               </tr>
             ))}
-            {initial.length === 0 && (
+            {filtered.length === 0 && (
               <tr>
                 <td colSpan={4} className="px-4 py-8 text-center text-muted">
-                  Todavía no hay secciones.
+                  {initial.length === 0
+                    ? "Todavía no hay secciones."
+                    : "Ninguna sección coincide con la búsqueda."}
                 </td>
               </tr>
             )}

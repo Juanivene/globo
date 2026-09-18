@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatCurrency, cn } from "@/lib/utils";
 import { OrderStatusBadge, STATUS_LABELS } from "@/components/ui/Badge";
+import { DeleteOrderButton } from "@/components/admin/DeleteOrderButton";
 import type { OrderStatus } from "@/app/generated/prisma/enums";
 
 const FILTERS: (OrderStatus | "TODOS")[] = [
@@ -48,7 +49,10 @@ export default async function AdminOrdersPage({
         ))}
       </div>
 
-      <div className="overflow-hidden rounded-xl bg-white shadow-sm">
+      {/* overflow-x-auto (not overflow-hidden): lets the table scroll within
+          its own card on narrow phones instead of stretching the whole
+          admin layout. */}
+      <div className="overflow-x-auto rounded-xl bg-white shadow-sm">
         <table className="w-full text-sm">
           <thead className="border-b border-border bg-black/[0.02] text-left text-xs uppercase text-muted">
             <tr>
@@ -58,39 +62,46 @@ export default async function AdminOrdersPage({
               <th className="px-4 py-3">Total</th>
               <th className="px-4 py-3">Estado</th>
               <th className="px-4 py-3">Fecha</th>
+              <th className="px-4 py-3" />
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {orders.map((order) => (
-              <tr key={order.id} className="hover:bg-black/[0.015]">
-                <td className="px-4 py-3">
-                  <Link
-                    href={`/admin/pedidos/${order.id}`}
-                    className="font-medium text-glow hover:underline"
-                  >
-                    #{order.id.slice(-8).toUpperCase()}
-                  </Link>
-                </td>
-                <td className="px-4 py-3 text-text">{order.customerName}</td>
-                <td className="px-4 py-3 text-muted">
-                  {order.paymentMethod === "MERCADO_PAGO"
-                    ? "Mercado Pago"
-                    : "Transferencia"}
-                </td>
-                <td className="px-4 py-3 text-text">
-                  {formatCurrency(order.total.toString())}
-                </td>
-                <td className="px-4 py-3">
-                  <OrderStatusBadge status={order.status} />
-                </td>
-                <td className="px-4 py-3 text-muted">
-                  {order.createdAt.toLocaleDateString("es-AR")}
-                </td>
-              </tr>
-            ))}
+            {orders.map((order) => {
+              const label = order.id.slice(-8).toUpperCase();
+              return (
+                <tr key={order.id} className="hover:bg-black/[0.015]">
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/admin/pedidos/${order.id}`}
+                      className="font-medium text-link hover:underline"
+                    >
+                      #{label}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3 text-text">{order.customerName}</td>
+                  <td className="px-4 py-3 text-muted">
+                    {order.paymentMethod === "MERCADO_PAGO"
+                      ? "Mercado Pago"
+                      : "Transferencia"}
+                  </td>
+                  <td className="px-4 py-3 text-text">
+                    {formatCurrency(order.total.toString())}
+                  </td>
+                  <td className="px-4 py-3">
+                    <OrderStatusBadge status={order.status} />
+                  </td>
+                  <td className="px-4 py-3 text-muted">
+                    {order.createdAt.toLocaleDateString("es-AR")}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <DeleteOrderButton orderId={order.id} orderLabel={label} />
+                  </td>
+                </tr>
+              );
+            })}
             {orders.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-muted">
+                <td colSpan={7} className="px-4 py-8 text-center text-muted">
                   No hay pedidos en este estado.
                 </td>
               </tr>

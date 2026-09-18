@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { shippingQuoteSchema } from "@/lib/validations/checkout";
 import { calculateShipping, totalWeightKgForItems, ShippingError } from "@/lib/shipping/calc";
+import { isCartFreeShipping } from "@/lib/shipping/freeShipping";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -31,7 +32,8 @@ export async function POST(req: NextRequest) {
 
   try {
     const quote = await calculateShipping(parsed.data.postalCode, totalWeightKg);
-    return NextResponse.json(quote);
+    const shippingCost = isCartFreeShipping(products, quote.province) ? 0 : quote.shippingCost;
+    return NextResponse.json({ ...quote, shippingCost });
   } catch (err) {
     if (err instanceof ShippingError) {
       const messages = {

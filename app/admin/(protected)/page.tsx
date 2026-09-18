@@ -41,7 +41,7 @@ export default async function AdminDashboardPage() {
           </h2>
           <Link
             href="/admin/pedidos"
-            className="text-sm text-glow hover:underline"
+            className="text-sm text-link hover:underline"
           >
             Ver todos
           </Link>

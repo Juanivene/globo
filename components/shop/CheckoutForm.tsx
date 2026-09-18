@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { MessageCircle, CreditCard } from "lucide-react";
+import { MessageCircle, CreditCard, Loader2, Truck } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Input";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { CheckoutProgress } from "@/components/shop/CheckoutProgress";
 import { formatCurrency } from "@/lib/utils";
 import { useCartStore } from "@/lib/cart/store";
 
@@ -28,6 +30,7 @@ export function CheckoutForm() {
   const [shippingError, setShippingError] = useState<string | null>(null);
   const [quoting, setQuoting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
 
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const isValidCp = /^\d{4}$/.test(postalCode) && items.length > 0;
@@ -91,10 +94,11 @@ export function CheckoutForm() {
       if (!res.ok) throw new Error(data.error ?? "No se pudo crear el pedido");
 
       if (paymentMethod === "MERCADO_PAGO") {
+        setRedirecting(true);
         const mpRes = await fetch("/api/checkout/mercadopago", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ orderId: data.orderId }),
+          body: JSON.stringify({ draftId: data.draftId }),
         });
         const mpData = await mpRes.json();
         if (!mpRes.ok || !mpData.initPoint) {
@@ -109,172 +113,309 @@ export function CheckoutForm() {
       clear();
       router.push(`/checkout/exito?orderId=${data.orderId}&metodo=transferencia`);
     } catch (err) {
+      setRedirecting(false);
       toast.error(err instanceof Error ? err.message : "Ocurrió un error");
     } finally {
       setSubmitting(false);
     }
   }
 
-  if (!hasHydrated) return null;
+  if (!hasHydrated) return <CheckoutFormSkeleton />;
 
   if (items.length === 0) {
     return (
-      <p className="rounded-xl bg-white p-8 text-center text-muted shadow-sm">
+      <p className="card-globo animate-rise p-8 text-center text-muted">
         Tu carrito está vacío.
       </p>
     );
   }
 
-  const total =
-    isValidCp && shippingCost !== null ? subtotal + shippingCost : null;
+  const total = isValidCp && shippingCost !== null ? subtotal + shippingCost : null;
+
+  const stepsDone = {
+    datos: Boolean(customerName && customerEmail && customerPhone && address),
+    envio: isValidCp && shippingCost !== null,
+    pago: submitting,
+  };
 
   return (
-    <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-      <div className="space-y-5 lg:col-span-2">
-        <div className="rounded-xl bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-primary">Tus datos</h2>
-          <div className="space-y-4">
-            <div>
-              <Label>Nombre completo</Label>
-              <Input
-                required
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-              />
-            </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <Label>Email</Label>
-                <Input
-                  required
-                  type="email"
-                  value={customerEmail}
-                  onChange={(e) => setCustomerEmail(e.target.value)}
+    <>
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <CheckoutProgress done={stepsDone} />
+
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+          <div className="space-y-5 lg:col-span-2">
+            <section
+              style={{ "--i": 0 } as React.CSSProperties}
+              className="stagger-rise card-globo p-5"
+            >
+              <h2 className="mb-4 font-heading text-lg font-semibold text-primary">
+                Tus datos
+              </h2>
+              <div className="space-y-4">
+                <div>
+                  <Label>Nombre completo</Label>
+                  <Input
+                    required
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                  />
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <Label>Email</Label>
+                    <Input
+                      required
+                      type="email"
+                      autoComplete="email"
+                      value={customerEmail}
+                      onChange={(e) => setCustomerEmail(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label>Teléfono</Label>
+                    <Input
+                      required
+                      autoComplete="tel"
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(e.target.value)}
+                      placeholder="11 2345 6789"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label>Dirección</Label>
+                  <Input
+                    required
+                    autoComplete="street-address"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Calle, número, piso/depto"
+                  />
+                </div>
+                <div>
+                  <Label>Código postal</Label>
+                  <div className="max-w-40">
+                    <Input
+                      required
+                      value={postalCode}
+                      onChange={(e) =>
+                        setPostalCode(e.target.value.replace(/\D/g, "").slice(0, 4))
+                      }
+                      placeholder="1425"
+                      inputMode="numeric"
+                      autoComplete="postal-code"
+                    />
+                  </div>
+
+                  {/* Reserved slot, so the layout never jumps as the quote resolves. */}
+                  <div className="mt-2 min-h-5 text-xs">
+                    {quoting && (
+                      <span className="animate-fade-in flex items-center gap-1.5 text-muted">
+                        <Truck size={13} className="text-bronze" />
+                        Calculando envío
+                        <Skeleton className="h-3 w-14 rounded-full" />
+                      </span>
+                    )}
+                    {!quoting && shippingError && (
+                      <span className="animate-fade-in text-red-600">{shippingError}</span>
+                    )}
+                    {!quoting && !shippingError && shippingCost !== null && (
+                      <span className="animate-fade-in text-muted">
+                        Envío a CP {postalCode}:{" "}
+                        <strong className="font-semibold text-primary">
+                          {formatCurrency(shippingCost)}
+                        </strong>
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section
+              style={{ "--i": 1 } as React.CSSProperties}
+              className="stagger-rise card-globo p-5"
+            >
+              <h2 className="mb-4 font-heading text-lg font-semibold text-primary">
+                Método de pago
+              </h2>
+              <div className="space-y-2">
+                <PaymentOption
+                  checked={paymentMethod === "MERCADO_PAGO"}
+                  onSelect={() => setPaymentMethod("MERCADO_PAGO")}
+                  icon={<CreditCard size={18} />}
+                  title="Mercado Pago"
+                  description="Pagás online, todas las tarjetas y medios disponibles."
+                />
+                <PaymentOption
+                  checked={paymentMethod === "TRANSFERENCIA"}
+                  onSelect={() => setPaymentMethod("TRANSFERENCIA")}
+                  icon={<MessageCircle size={18} />}
+                  title="Transferencia"
+                  description="Coordinás el pago por WhatsApp con nosotros."
                 />
               </div>
-              <div>
-                <Label>Teléfono</Label>
-                <Input
-                  required
-                  value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
-                  placeholder="11 2345 6789"
-                />
+            </section>
+          </div>
+
+          <section
+            style={{ "--i": 2 } as React.CSSProperties}
+            className="stagger-rise card-globo h-fit space-y-4 p-5 lg:sticky lg:top-24"
+          >
+            <h2 className="font-heading text-lg font-semibold text-primary">Resumen</h2>
+            <ul className="space-y-2 text-sm">
+              {items.map((i) => (
+                <li key={i.productId} className="flex justify-between gap-3 text-muted">
+                  <span className="line-clamp-1">
+                    {i.title} x{i.quantity}
+                  </span>
+                  <span className="shrink-0 tabular-nums">
+                    {formatCurrency(i.price * i.quantity)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="space-y-1 border-t border-border pt-3 text-sm">
+              <div className="flex justify-between text-muted">
+                <span>Subtotal</span>
+                <span className="tabular-nums">{formatCurrency(subtotal)}</span>
+              </div>
+              <div className="flex justify-between text-muted">
+                <span>Envío</span>
+                {quoting ? (
+                  <Skeleton className="h-4 w-16 rounded-full" />
+                ) : (
+                  <span className="tabular-nums">
+                    {isValidCp && shippingCost !== null
+                      ? formatCurrency(shippingCost)
+                      : "—"}
+                  </span>
+                )}
+              </div>
+              <div className="flex justify-between font-heading text-base font-semibold text-text">
+                <span>Total</span>
+                <span key={total ?? "empty"} className="animate-fade-in tabular-nums">
+                  {total !== null ? formatCurrency(total) : "—"}
+                </span>
               </div>
             </div>
-            <div>
-              <Label>Dirección</Label>
-              <Input
-                required
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="Calle, número, piso/depto"
-              />
-            </div>
-            <div className="max-w-[160px]">
-              <Label>Código postal</Label>
-              <Input
-                required
-                value={postalCode}
-                onChange={(e) => setPostalCode(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                placeholder="1425"
-                inputMode="numeric"
-              />
-              {quoting && <p className="mt-1 text-xs text-muted">Calculando envío...</p>}
-              {shippingError && (
-                <p className="mt-1 text-xs text-red-600">{shippingError}</p>
+            <Button
+              type="submit"
+              className="sheen w-full transition-transform active:scale-[0.98]"
+              size="lg"
+              disabled={submitting}
+            >
+              {submitting ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" /> Procesando...
+                </>
+              ) : (
+                "Confirmar pedido"
               )}
-            </div>
-          </div>
+            </Button>
+            <p className="text-center text-xs text-muted">
+              No se te cobra nada hasta confirmar el pago.
+            </p>
+          </section>
         </div>
+      </form>
 
-        <div className="rounded-xl bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-primary">
-            Método de pago
-          </h2>
-          <div className="space-y-2">
-            <label
-              className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors ${
-                paymentMethod === "MERCADO_PAGO"
-                  ? "border-accent bg-accent/10"
-                  : "border-border"
-              }`}
-            >
-              <input
-                type="radio"
-                name="paymentMethod"
-                checked={paymentMethod === "MERCADO_PAGO"}
-                onChange={() => setPaymentMethod("MERCADO_PAGO")}
-                className="accent-accent"
-              />
-              <CreditCard size={18} className="text-primary" />
-              <div>
-                <p className="text-sm font-medium text-text">Mercado Pago</p>
-                <p className="text-xs text-muted">
-                  Pagás online, todas las tarjetas y medios disponibles.
-                </p>
-              </div>
-            </label>
-            <label
-              className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors ${
-                paymentMethod === "TRANSFERENCIA"
-                  ? "border-accent bg-accent/10"
-                  : "border-border"
-              }`}
-            >
-              <input
-                type="radio"
-                name="paymentMethod"
-                checked={paymentMethod === "TRANSFERENCIA"}
-                onChange={() => setPaymentMethod("TRANSFERENCIA")}
-                className="accent-accent"
-              />
-              <MessageCircle size={18} className="text-primary" />
-              <div>
-                <p className="text-sm font-medium text-text">Transferencia</p>
-                <p className="text-xs text-muted">
-                  Coordinás el pago por WhatsApp con nosotros.
-                </p>
-              </div>
-            </label>
-          </div>
-        </div>
-      </div>
+      {redirecting && <MercadoPagoRedirectOverlay />}
+    </>
+  );
+}
 
-      <div className="h-fit space-y-4 rounded-xl bg-white p-5 shadow-sm">
-        <h2 className="text-lg font-semibold text-primary">Resumen</h2>
-        <ul className="space-y-2 text-sm">
-          {items.map((i) => (
-            <li key={i.productId} className="flex justify-between text-muted">
-              <span className="line-clamp-1">
-                {i.title} x{i.quantity}
-              </span>
-              <span>{formatCurrency(i.price * i.quantity)}</span>
-            </li>
-          ))}
-        </ul>
-        <div className="space-y-1 border-t border-border pt-3 text-sm">
-          <div className="flex justify-between text-muted">
-            <span>Subtotal</span>
-            <span>{formatCurrency(subtotal)}</span>
-          </div>
-          <div className="flex justify-between text-muted">
-            <span>Envío</span>
-            <span>
-              {isValidCp && shippingCost !== null
-                ? formatCurrency(shippingCost)
-                : "—"}
-            </span>
-          </div>
-          <div className="flex justify-between text-base font-semibold text-text">
-            <span>Total</span>
-            <span>{total !== null ? formatCurrency(total) : "—"}</span>
-          </div>
-        </div>
-        <Button type="submit" className="w-full" size="lg" disabled={submitting}>
-          {submitting ? "Procesando..." : "Confirmar pedido"}
-        </Button>
+function PaymentOption({
+  checked,
+  onSelect,
+  icon,
+  title,
+  description,
+}: {
+  checked: boolean;
+  onSelect: () => void;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <label
+      className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        checked
+          ? "border-accent bg-accent/10 shadow-(--shadow-option-active)"
+          : "border-border hover:border-primary/30 hover:bg-black/2"
+      }`}
+    >
+      <input
+        type="radio"
+        name="paymentMethod"
+        checked={checked}
+        onChange={onSelect}
+        className="accent-accent"
+      />
+      <span
+        className={`transition-colors duration-200 ${
+          checked ? "text-bronze" : "text-primary"
+        }`}
+      >
+        {icon}
+      </span>
+      <div>
+        <p className="text-sm font-medium text-text">{title}</p>
+        <p className="text-xs text-muted">{description}</p>
       </div>
-    </form>
+    </label>
+  );
+}
+
+/**
+ * Covers the gap between "Confirmar pedido" and Mercado Pago's own page, which
+ * is otherwise a few seconds of a frozen-looking form.
+ */
+function MercadoPagoRedirectOverlay() {
+  return (
+    <div
+      className="animate-fade-in fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-bg/80 backdrop-blur-sm"
+      role="status"
+      aria-live="polite"
+    >
+      <span className="relative flex h-14 w-14 items-center justify-center">
+        <span className="absolute inset-0 rounded-full border-2 border-accent/25" />
+        <span className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-accent" />
+        <CreditCard size={20} className="text-accent" />
+      </span>
+      <div className="text-center">
+        <p className="font-heading text-base font-semibold text-white">
+          Te llevamos a Mercado Pago
+        </p>
+        <p className="mt-1 text-sm text-white/60">
+          No cierres esta ventana, tarda solo unos segundos.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function CheckoutFormSkeleton() {
+  return (
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-3" role="status" aria-label="Cargando checkout">
+      <div className="space-y-5 lg:col-span-2">
+        {[0, 1].map((i) => (
+          <div key={i} style={{ "--i": i } as React.CSSProperties} className="stagger-rise card-globo space-y-4 p-5">
+            <Skeleton className="h-5 w-32" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-2/3" />
+          </div>
+        ))}
+      </div>
+      <div style={{ "--i": 2 } as React.CSSProperties} className="stagger-rise card-globo h-fit space-y-3 p-5">
+        <Skeleton className="h-5 w-24" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-12 w-full rounded-xl" />
+      </div>
+    </div>
   );
 }

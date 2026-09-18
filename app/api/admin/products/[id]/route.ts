@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/require-admin";
 import { productSchema } from "@/lib/validations/product";
 import { slugify } from "@/lib/utils";
 import { deleteR2Object } from "@/lib/r2";
+import type { ArgentinaProvince } from "@/app/generated/prisma/enums";
 
 export async function GET(
   _req: NextRequest,
@@ -38,7 +39,7 @@ export async function PATCH(
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { sectionIds, ...data } = parsed.data;
+  const { sectionIds, freeShippingProvinces, ...data } = parsed.data;
   const existing = await prisma.product.findUnique({ where: { id } });
   if (!existing) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
 
@@ -56,6 +57,7 @@ export async function PATCH(
     where: { id },
     data: {
       ...data,
+      freeShippingProvinces: freeShippingProvinces as ArgentinaProvince[],
       slug,
       sections: {
         deleteMany: {},

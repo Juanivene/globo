@@ -1,30 +1,63 @@
 @import "tailwindcss";
 
 :root {
-  /* Globo Arg brand tokens — derived from the night-Earth logo */
-  --color-bg: #0a0e1a;
-  --color-surface: #0f1729;
-  --color-surface-light: #f7f7f5;
-  --color-primary: #1a2f5c;
-  --color-primary-light: #24406f;
-  --color-accent: #e8b34d;
-  --color-accent-hover: #d49a2e;
-  --color-glow: #3f7fc4;
-  --color-text: #141824;
-  --color-text-invert: #f5f6f8;
-  --color-muted: #6b7280;
-  --color-border: #e5e5e2;
+  /* ---- Globo Arg brand tokens — palette "Puerto" ----
+     Verde petróleo + naranja durazno sobre crema. Reemplaza al azul/ciruela
+     anterior: el dorado del logo queda como detalle (brillo) y el CTA pasa a un
+     durazno cálido que es lo más visible de cada pantalla.
+
+     REGLAS DE USO (cada una evita un fallo de contraste medido, WCAG AA 4.5:1):
+       accent  #ffa04d  fondo de CTA con texto --color-primary (5.9:1).
+                        Nunca como texto sobre claro (2.0:1) -> usar bronze.
+       bronze  #a35f1c  la versión de accent apta como TEXTO sobre claro (4.7:1).
+       coral   #ff6b4a  solo fondo decorativo, siempre con texto --color-text (5.3:1).
+       glow    #5fd6c7  solo decorativo sobre superficies OSCURAS. Sobre claro no se ve.
+       link    #0b5d5e  enlaces, foco e iconos de acción sobre claro (7.2:1).
+
+     Para cambiar de paleta alcanza con reemplazar los valores de este bloque
+     y de --shadow-* (más abajo): ningún componente lleva colores propios. */
+  --color-bg: #0a2b2c;          /* petróleo más profundo — footer */
+  --color-surface: #0f3d3e;
+  --color-surface-light: #fbf7f2; /* lienzo crema */
+  --color-card: #ffffff;
+  --color-primary: #0f3d3e;     /* petróleo — header, títulos (11.2:1 sobre crema) */
+  --color-primary-light: #1b5658;
+  --color-accent: #ffa04d;
+  --color-accent-hover: #f28c33;
+  --color-bronze: #a35f1c;
+  --color-coral: #ff6b4a;
+  --color-glow: #5fd6c7;
+  --color-whatsapp: #25d366;    /* verde de marca de WhatsApp: fondo de botón con texto --color-primary (6.0:1). Con texto blanco daría 2.0:1. */
+  --color-whatsapp-hover: #1fbd5a;
+  --color-link: #0b5d5e;
+  --color-text: #1e2a2a;        /* 13.9:1 sobre crema */
+  --color-text-invert: #fbf7f2;
+  --color-muted: #6b7370;       /* 4.6:1 sobre crema */
+  --color-border: #e7e2d8;
+
+  /* ---- Motion tokens: one vocabulary for the whole shop ---- */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out-soft: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-exit: 150ms;
+  --duration-enter: 210ms;
+  --duration-move: 400ms;
 }
 
 @theme inline {
   --color-bg: var(--color-bg);
   --color-surface: var(--color-surface);
   --color-surface-light: var(--color-surface-light);
+  --color-card: var(--color-card);
   --color-primary: var(--color-primary);
   --color-primary-light: var(--color-primary-light);
   --color-accent: var(--color-accent);
   --color-accent-hover: var(--color-accent-hover);
+  --color-bronze: var(--color-bronze);
+  --color-coral: var(--color-coral);
   --color-glow: var(--color-glow);
+  --color-link: var(--color-link);
+  --color-whatsapp: var(--color-whatsapp);
+  --color-whatsapp-hover: var(--color-whatsapp-hover);
   --color-text: var(--color-text);
   --color-text-invert: var(--color-text-invert);
   --color-muted: var(--color-muted);
@@ -32,6 +65,22 @@
 
   --font-heading: var(--font-space-grotesk);
   --font-sans: var(--font-inter);
+
+  /* Elevación firma: teñida con el petróleo, nunca un gris duro */
+  --shadow-card: 0 1px 2px rgba(30, 42, 42, 0.04), 0 4px 16px rgba(15, 61, 62, 0.07);
+  --shadow-card-hover: 0 2px 4px rgba(30, 42, 42, 0.05), 0 14px 32px rgba(15, 61, 62, 0.15);
+  --shadow-drawer: -8px 0 40px rgba(10, 43, 44, 0.22);
+  --shadow-accent: 0 2px 10px rgba(255, 160, 77, 0.38);
+  --shadow-accent-hover: 0 6px 20px rgba(255, 160, 77, 0.5);
+  --shadow-chip-active: 0 4px 12px rgba(15, 61, 62, 0.28);
+  --shadow-ring-accent: 0 0 0 4px rgba(255, 160, 77, 0.25);
+  --shadow-option-active: 0 2px 10px rgba(255, 160, 77, 0.25);
+
+  --animate-rise: rise 0.55s var(--ease-out-soft) both;
+  --animate-fade-in: fade-in 0.4s var(--ease-out-soft) both;
+  --animate-pop: pop 0.4s var(--ease-out-soft);
+  --animate-shimmer: shimmer 1.6s ease-in-out infinite;
+  --animate-check-pop: check-pop 0.5s var(--ease-out-soft) both;
 }
 
 body {
@@ -42,4 +91,225 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading), system-ui, sans-serif;
+  letter-spacing: -0.015em;
+}
+
+/* ===================================================================
+   Keyframes
+   =================================================================== */
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.22); }
+  100% { transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.45; }
+}
+
+@keyframes check-pop {
+  0%   { opacity: 0; transform: scale(0.6); }
+  60%  { opacity: 1; transform: scale(1.12); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fade {
+  from { filter: blur(3px); opacity: 0; }
+  to   { filter: blur(0); opacity: 1; }
+}
+@keyframes slide-y {
+  from { transform: translateY(10px); }
+  to   { transform: translateY(0); }
+}
+@keyframes slide-x {
+  from { translate: var(--slide-offset); }
+  to   { translate: 0; }
+}
+
+/* Indeterminate progress sweep, used for inline link-pending feedback. */
+@keyframes indeterminate {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(400%); }
+}
+
+/* ===================================================================
+   Signature utilities — the shop's repeatable visual language
+   =================================================================== */
+
+/* Every content surface in the shop uses this one card recipe. */
+@utility card-globo {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-card);
+}
+
+/* Staggered entrance. `--i` is set inline per item by the grid. */
+@utility stagger-rise {
+  animation: rise 0.55s var(--ease-out-soft) both;
+  animation-delay: calc(var(--i, 0) * 55ms);
+}
+
+/* Gold sheen that sweeps across primary buttons on hover/focus. */
+@utility sheen {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(
+      110deg,
+      transparent 20%,
+      rgba(255, 255, 255, 0.55) 45%,
+      transparent 70%
+    );
+    translate: -120% 0;
+    transition: translate 0.6s var(--ease-out-soft);
+  }
+  &:hover::after,
+  &:focus-visible::after {
+    translate: 120% 0;
+  }
+}
+
+/* Panel de marca compartido por header, hero y footer: petróleo con un brillo
+   durazno en una esquina y menta en la otra (los dos colores de acento). */
+@utility night-panel {
+  background:
+    radial-gradient(120% 140% at 12% 0%, var(--color-primary-light) 0%, transparent 55%),
+    radial-gradient(85% 110% at 92% 8%, rgba(255, 160, 77, 0.24) 0%, transparent 55%),
+    radial-gradient(90% 120% at 100% 100%, rgba(95, 214, 199, 0.26) 0%, transparent 60%),
+    var(--color-primary);
+}
+
+/* Loading placeholder with a brand tint instead of a generic grey pulse. */
+@utility skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(15, 61, 62, 0.07) 0%,
+    rgba(15, 61, 62, 0.13) 50%,
+    rgba(15, 61, 62, 0.07) 100%
+  );
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* ===================================================================
+   View transitions
+   =================================================================== */
+
+/* Let clicks reach the live page while a transition is still running, so no
+   animation can ever delay a "Agregar al carrito" tap. */
+::view-transition {
+  pointer-events: none;
+}
+
+/* --- Shared element: the product image morphs thumbnail -> detail hero --- */
+::view-transition-group(.morph) {
+  animation-duration: var(--duration-move);
+  animation-timing-function: var(--ease-out-soft);
+}
+::view-transition-image-pair(.morph) {
+  animation-name: via-blur;
+}
+@keyframes via-blur {
+  30% { filter: blur(3px); }
+}
+
+/* --- Suspense reveal: the skeleton hands off to real content --- */
+::view-transition-old(.slide-down) {
+  animation:
+    var(--duration-exit) ease-out both fade reverse,
+    var(--duration-exit) ease-out both slide-y reverse;
+}
+::view-transition-new(.slide-up) {
+  animation:
+    var(--duration-enter) ease-in var(--duration-exit) both fade,
+    var(--duration-move) ease-in both slide-y;
+}
+
+/* --- Directional navigation --- */
+::view-transition-old(.nav-forward) {
+  --slide-offset: -60px;
+  animation:
+    var(--duration-exit) ease-in both fade reverse,
+    var(--duration-move) var(--ease-in-out-soft) both slide-x reverse;
+}
+::view-transition-new(.nav-forward) {
+  --slide-offset: 60px;
+  animation:
+    var(--duration-enter) ease-out var(--duration-exit) both fade,
+    var(--duration-move) var(--ease-in-out-soft) both slide-x;
+}
+::view-transition-old(.nav-back) {
+  --slide-offset: 60px;
+  animation:
+    var(--duration-exit) ease-in both fade reverse,
+    var(--duration-move) var(--ease-in-out-soft) both slide-x reverse;
+}
+::view-transition-new(.nav-back) {
+  --slide-offset: -60px;
+  animation:
+    var(--duration-enter) ease-out var(--duration-exit) both fade,
+    var(--duration-move) var(--ease-in-out-soft) both slide-x;
+}
+
+/* Anchor the header so the user keeps one fixed spatial reference. */
+::view-transition-group(site-header) {
+  animation: none;
+  z-index: 100;
+}
+::view-transition-old(site-header) { display: none; }
+::view-transition-new(site-header) { animation: none; }
+
+/* ===================================================================
+   Accessibility — motion is decoration here, never the message
+   =================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Visible, on-brand focus ring for keyboard users across the whole shop.
+   No border-radius here on purpose: the outline already follows each element's
+   own radius, and setting one would reshape rounded buttons on focus. */
+:focus-visible {
+  outline: 2px solid var(--color-link);
+  outline-offset: 2px;
+}
+
+/* On the dark panels the deep teal would disappear, so the bright halo cyan
+   takes over there. */
+.night-panel :focus-visible {
+  outline-color: var(--color-glow);
 }
