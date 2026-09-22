@@ -148,7 +148,7 @@ export default async function CheckoutSuccessPage({
 
             <div style={{ "--i": 1 } as React.CSSProperties} className="stagger-rise">
               <h1 className="font-heading text-2xl font-bold text-primary">
-                ¡Pedido recibido!
+                {isTransfer ? "¡Pedido recibido!" : "¡Gracias por tu compra!"}
               </h1>
               <p className="mt-1 text-sm text-muted">
                 Pedido #{order.id.slice(-8).toUpperCase()} — Total{" "}
@@ -192,8 +192,9 @@ export default async function CheckoutSuccessPage({
                 </div>
               ) : (
                 <p className="text-sm text-text">
-                  Ya confirmamos tu pago con Mercado Pago. Te vamos a avisar por
-                  email cuando despachemos tu pedido.
+                  Ya confirmamos tu pago con Mercado Pago. En breve te va a llegar
+                  un email a <strong className="font-medium">{order.customerEmail}</strong> con
+                  el resumen de tu pedido, y te vamos a avisar por ahí cuando lo despachemos.
                 </p>
               )}
             </div>
