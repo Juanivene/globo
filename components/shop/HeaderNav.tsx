@@ -26,13 +26,19 @@ export function HeaderNav({ className }: { className?: string }) {
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "relative block rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors duration-200",
-                  active
-                    ? "bg-white/12 text-white"
-                    : "text-white/70 hover:bg-white/8 hover:text-white"
+                  "group relative block rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors duration-200",
+                  active ? "bg-white/12 text-white" : "text-white/70 hover:text-white"
                 )}
               >
-                {label}
+                {/* Fondo que crece desde el centro al pasar por encima, en vez
+                    de un cambio seco de color. */}
+                {!active && (
+                  <span
+                    aria-hidden
+                    className="absolute inset-0 origin-center scale-75 rounded-full bg-white/10 opacity-0 transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-100 group-hover:opacity-100"
+                  />
+                )}
+                <span className="relative">{label}</span>
                 {active && (
                   <span
                     aria-hidden

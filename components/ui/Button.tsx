@@ -7,16 +7,17 @@ type Size = "sm" | "md" | "lg";
 const variantClasses: Record<Variant, string> = {
   primary:
     "bg-accent text-primary font-semibold hover:bg-accent-hover shadow-(--shadow-accent) hover:shadow-(--shadow-accent-hover)",
-  secondary: "bg-primary text-text-invert hover:bg-primary-light",
-  outline: "border border-border bg-card text-text hover:bg-black/5 hover:border-primary/30",
-  ghost: "text-text hover:bg-black/5",
-  danger: "bg-red-600 text-white hover:bg-red-700",
+  secondary: "bg-primary text-text-invert font-medium hover:bg-primary-light",
+  outline:
+    "border border-border bg-card text-text hover:border-primary/30 hover:bg-primary/4",
+  ghost: "text-text hover:bg-primary/6",
+  danger: "bg-red-600 text-white font-medium hover:bg-red-700",
 };
 
 const sizeClasses: Record<Size, string> = {
-  sm: "text-sm px-3 py-1.5 rounded-md",
-  md: "text-sm px-4 py-2.5 rounded-lg",
-  lg: "text-base px-6 py-3 rounded-xl",
+  sm: "text-sm px-3.5 py-1.5 rounded-lg",
+  md: "text-sm px-4 py-2.5 rounded-xl",
+  lg: "text-base px-6 py-3.5 rounded-xl",
 };
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {

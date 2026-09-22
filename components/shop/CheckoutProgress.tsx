@@ -26,12 +26,12 @@ export function CheckoutProgress({ done }: { done: Record<CheckoutStepId, boolea
   const completedCount = STEPS.filter((s) => done[s.id]).length;
 
   return (
-    <div className="card-globo p-4">
+    <div className="card-globo px-5 py-4">
       <ol className="relative flex items-center justify-between">
-        {/* Rail behind the markers */}
+        {/* Riel detrás de los marcadores */}
         <div
           aria-hidden
-          className="absolute left-4 right-4 top-3.5 h-0.5 -translate-y-1/2 rounded-full bg-border"
+          className="absolute left-4 right-4 top-4 h-0.5 -translate-y-1/2 rounded-full bg-border"
         >
           <div
             className="h-full rounded-full bg-accent transition-[width] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
@@ -49,22 +49,22 @@ export function CheckoutProgress({ done }: { done: Record<CheckoutStepId, boolea
           return (
             <li
               key={step.id}
-              className="relative z-10 flex flex-col items-center gap-1.5"
+              className="relative z-10 flex flex-col items-center gap-2"
               aria-current={isActive ? "step" : undefined}
             >
               <span
                 className={cn(
-                  "flex h-7 w-7 items-center justify-center rounded-full border-2 bg-card text-xs font-bold transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                  "flex h-8 w-8 items-center justify-center rounded-full border-2 bg-card text-xs font-bold transition-[background-color,border-color,color,box-shadow,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
                   isDone && "border-accent bg-accent text-primary",
                   isActive && "scale-110 border-accent text-primary shadow-(--shadow-ring-accent)",
                   !isDone && !isActive && "border-border text-muted"
                 )}
               >
-                {isDone ? <Check size={14} className="animate-check-pop" /> : i + 1}
+                {isDone ? <Check size={15} className="animate-check-pop" /> : i + 1}
               </span>
               <span
                 className={cn(
-                  "text-xs font-medium transition-colors duration-300",
+                  "text-xs font-semibold transition-colors duration-300",
                   isDone || isActive ? "text-primary" : "text-muted"
                 )}
               >

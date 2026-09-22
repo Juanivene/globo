@@ -93,16 +93,20 @@ export function ProductGallery({
         </div>
 
         {images.length > 1 && (
-          <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center gap-1.5">
-            {images.map((img, i) => (
-              <span
-                key={img.id}
-                className={cn(
-                  "h-1.5 rounded-full bg-white/60 shadow transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                  i === active ? "w-5 bg-accent" : "w-1.5"
-                )}
-              />
-            ))}
+          // Los puntos van sobre una píldora oscura: sueltos, sobre una foto de
+          // fondo claro, se perdían por completo.
+          <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center">
+            <div className="flex items-center gap-1.5 rounded-full bg-bg/45 px-2.5 py-1.5 backdrop-blur-sm">
+              {images.map((img, i) => (
+                <span
+                  key={img.id}
+                  className={cn(
+                    "h-1.5 rounded-full bg-white/60 transition-[width,background-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                    i === active ? "w-5 bg-accent" : "w-1.5"
+                  )}
+                />
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -115,10 +119,10 @@ export function ProductGallery({
               onClick={() => scrollTo(i)}
               aria-label={`Ver imagen ${i + 1} de ${images.length}`}
               className={cn(
-                "relative aspect-square cursor-pointer overflow-hidden rounded-lg bg-card transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                "relative aspect-square cursor-pointer overflow-hidden rounded-xl bg-card transition-[opacity,transform,box-shadow] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
                 i === active
                   ? "ring-2 ring-accent ring-offset-2 ring-offset-surface-light"
-                  : "opacity-60 hover:-translate-y-0.5 hover:opacity-100"
+                  : "opacity-55 hover:-translate-y-0.5 hover:opacity-100"
               )}
             >
               <Image src={img.url} alt="" fill className="object-cover" sizes="100px" />

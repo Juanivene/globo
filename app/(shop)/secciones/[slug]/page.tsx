@@ -1,11 +1,11 @@
 import { Suspense, ViewTransition } from "react";
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { BackLink } from "@/components/shop/BackLink";
 import { CatalogControls } from "@/components/shop/CatalogControls";
 import { CatalogResults } from "@/components/shop/CatalogResults";
 import { PageTransition } from "@/components/shop/PageTransition";
+import { SectionHeading } from "@/components/shop/SectionHeading";
 import { ProductGridSkeleton } from "@/components/ui/Skeleton";
 
 export default async function SectionPage({
@@ -25,21 +25,9 @@ export default async function SectionPage({
   return (
     <PageTransition>
       <div className="space-y-6">
-        <div className="space-y-2">
-          <Link
-            href="/products"
-            transitionTypes={["nav-back"]}
-            className="group inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-primary"
-          >
-            <ArrowLeft
-              size={16}
-              className="transition-transform duration-200 group-hover:-translate-x-0.5"
-            />
-            Volver al catálogo
-          </Link>
-          <h1 className="animate-rise font-heading text-2xl font-bold text-primary">
-            {section.name}
-          </h1>
+        <div className="space-y-3">
+          <BackLink href="/products">Volver al catálogo</BackLink>
+          <SectionHeading as="h1" eyebrow="Sección" title={section.name} />
         </div>
 
         <CatalogControls
@@ -56,7 +44,7 @@ export default async function SectionPage({
           }
         >
           <ViewTransition enter="slide-up" default="none">
-            <CatalogResults seccion={slug} />
+            <CatalogResults seccion={slug} showCount />
           </ViewTransition>
         </Suspense>
       </div>

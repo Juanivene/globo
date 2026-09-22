@@ -81,7 +81,8 @@ export const howItWorks = {
       body: "Lo despachamos a cualquier punto de Argentina.",
     },
   ] satisfies Highlight[],
-  imageAlt: "Un paquete siendo abierto",
+  imageAlt:
+    "Una caja de USPS abierta sobre un escritorio, con varios productos de tecnología adentro listos para despachar",
 };
 
 // ------------------------------------------------------------- WhatsApp
@@ -140,7 +141,8 @@ export const about = {
       body: "Te acompañamos en todo el pedido, de la elección a la entrega.",
     },
   ] satisfies Highlight[],
-  imageAlt: "Perfumes de distintas marcas apilados junto a una ventana",
+  imageAlt:
+    "Una notebook, una tablet, auriculares y otros gadgets importados apoyados sobre una mesa de madera",
   /** Banner ancho con la foto de tecnología. */
   banner: {
     title: "Perfumes, tecnología y lo que se te ocurra",

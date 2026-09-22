@@ -6,6 +6,7 @@ import { mpPayment } from "@/lib/mercadopago";
 import { confirmDraftFromPayment } from "@/lib/checkout/confirmMercadoPagoPayment";
 import { formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
+import { OutcomeCard } from "@/components/shop/OutcomeCard";
 import { PageTransition } from "@/components/shop/PageTransition";
 import { ClearCartOnMount } from "@/components/shop/ClearCartOnMount";
 import type { Order, OrderItem } from "@/app/generated/prisma/client";
@@ -88,36 +89,14 @@ export default async function CheckoutSuccessPage({
   if (!order) {
     return (
       <PageTransition>
-        <div className="mx-auto max-w-lg">
-          <div className="card-globo relative overflow-hidden p-8 text-center">
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-linear-to-b from-accent/10 to-transparent"
-            />
-            <div className="relative space-y-6">
-              <span className="relative mx-auto flex h-16 w-16 items-center justify-center">
-                <span className="absolute inset-0 rounded-full bg-accent/10" />
-                <Clock size={40} className="text-bronze" />
-              </span>
-              <div>
-                <h1 className="font-heading text-2xl font-bold text-primary">
-                  Estamos confirmando tu pago
-                </h1>
-                <p className="mt-1 text-sm text-muted">
-                  En cuanto Mercado Pago nos confirme la acreditación te vamos a
-                  avisar por email. No hace falta que hagas nada más.
-                </p>
-              </div>
-              <Link
-                href="/products"
-                transitionTypes={["nav-back"]}
-                className="block text-sm text-link transition-colors hover:text-primary hover:underline"
-              >
-                Volver al catálogo
-              </Link>
-            </div>
-          </div>
-        </div>
+        <OutcomeCard
+          tone="pending"
+          icon={Clock}
+          title="Estamos confirmando tu pago"
+          subtitle="En cuanto Mercado Pago nos confirme la acreditación te vamos a avisar por email. No hace falta que hagas nada más."
+        >
+          <BackToCatalog />
+        </OutcomeCard>
       </PageTransition>
     );
   }
@@ -129,87 +108,77 @@ export default async function CheckoutSuccessPage({
   return (
     <PageTransition>
       {!isTransfer && <ClearCartOnMount />}
-      <div className="mx-auto max-w-lg">
-        <div className="card-globo relative overflow-hidden p-8 text-center">
-          {/* Soft green wash behind the confirmation mark. */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-linear-to-b from-green-500/10 to-transparent"
-          />
 
-          <div className="relative space-y-6">
-            <span
-              style={{ "--i": 0 } as React.CSSProperties}
-              className="stagger-rise relative mx-auto flex h-16 w-16 items-center justify-center"
-            >
-              <span className="absolute inset-0 rounded-full bg-green-500/10" />
-              <CheckCircle2 size={44} className="animate-check-pop text-green-600" />
-            </span>
+      <OutcomeCard
+        tone="success"
+        icon={CheckCircle2}
+        title={isTransfer ? "¡Pedido recibido!" : "¡Gracias por tu compra!"}
+        subtitle={
+          <>
+            Pedido #{order.id.slice(-8).toUpperCase()} — Total{" "}
+            <strong className="font-semibold text-text tabular-nums">
+              {formatCurrency(order.total.toString())}
+            </strong>
+          </>
+        }
+      >
+        <ul
+          style={{ "--i": 2 } as React.CSSProperties}
+          className="stagger-rise space-y-2 rounded-xl bg-primary/4 p-4 text-left text-sm"
+        >
+          {order.items.map((item) => (
+            <li key={item.id} className="flex items-start gap-2.5 text-muted">
+              <Package size={15} className="mt-0.5 shrink-0 text-bronze" />
+              <span className="flex-1">
+                {item.titleSnapshot} × {item.quantity}
+              </span>
+            </li>
+          ))}
+        </ul>
 
-            <div style={{ "--i": 1 } as React.CSSProperties} className="stagger-rise">
-              <h1 className="font-heading text-2xl font-bold text-primary">
-                {isTransfer ? "¡Pedido recibido!" : "¡Gracias por tu compra!"}
-              </h1>
-              <p className="mt-1 text-sm text-muted">
-                Pedido #{order.id.slice(-8).toUpperCase()} — Total{" "}
-                <strong className="font-semibold text-text tabular-nums">
-                  {formatCurrency(order.total.toString())}
-                </strong>
+        <div style={{ "--i": 3 } as React.CSSProperties} className="stagger-rise">
+          {isTransfer ? (
+            <div className="space-y-3">
+              <p className="text-sm text-text">
+                Para confirmar tu pedido, envianos el resumen por WhatsApp.
+                Nosotros te vamos a pasar los datos para la transferencia.
               </p>
-            </div>
-
-            <ul
-              style={{ "--i": 2 } as React.CSSProperties}
-              className="stagger-rise space-y-1.5 rounded-xl bg-black/3 p-4 text-left text-sm"
-            >
-              {order.items.map((item) => (
-                <li key={item.id} className="flex items-start gap-2 text-muted">
-                  <Package size={15} className="mt-0.5 shrink-0 text-bronze" />
-                  <span className="flex-1">
-                    {item.titleSnapshot} × {item.quantity}
-                  </span>
-                </li>
-              ))}
-            </ul>
-
-            <div style={{ "--i": 3 } as React.CSSProperties} className="stagger-rise">
-              {isTransfer ? (
-                <div className="space-y-3">
-                  <p className="text-sm text-text">
-                    Para confirmar tu pedido, envianos el resumen por WhatsApp.
-                    Nosotros te vamos a pasar los datos para la transferencia.
-                  </p>
-                  {whatsappLink && (
-                    <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
-                      <Button
-                        size="lg"
-                        className="sheen w-full transition-transform active:scale-[0.98]"
-                      >
-                        <MessageCircle size={18} /> Enviar por WhatsApp
-                      </Button>
-                    </a>
-                  )}
-                </div>
-              ) : (
-                <p className="text-sm text-text">
-                  Ya confirmamos tu pago con Mercado Pago. En breve te va a llegar
-                  un email a <strong className="font-medium">{order.customerEmail}</strong> con
-                  el resumen de tu pedido, y te vamos a avisar por ahí cuando lo despachemos.
-                </p>
+              {whatsappLink && (
+                <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
+                  <Button
+                    size="lg"
+                    className="sheen w-full transition-transform hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
+                  >
+                    <MessageCircle size={18} /> Enviar por WhatsApp
+                  </Button>
+                </a>
               )}
             </div>
-
-            <Link
-              href="/products"
-              transitionTypes={["nav-back"]}
-              style={{ "--i": 4 } as React.CSSProperties}
-              className="stagger-rise block text-sm text-link transition-colors hover:text-primary hover:underline"
-            >
-              Volver al catálogo
-            </Link>
-          </div>
+          ) : (
+            <p className="text-sm text-text">
+              Ya confirmamos tu pago con Mercado Pago. En breve te va a llegar un
+              email a <strong className="font-medium">{order.customerEmail}</strong> con
+              el resumen de tu pedido, y te vamos a avisar por ahí cuando lo
+              despachemos.
+            </p>
+          )}
         </div>
-      </div>
+
+        <BackToCatalog index={4} />
+      </OutcomeCard>
     </PageTransition>
+  );
+}
+
+function BackToCatalog({ index = 2 }: { index?: number }) {
+  return (
+    <Link
+      href="/products"
+      transitionTypes={["nav-back"]}
+      style={{ "--i": index } as React.CSSProperties}
+      className="stagger-rise block text-sm font-medium text-link transition-colors hover:text-primary hover:underline"
+    >
+      Volver al catálogo
+    </Link>
   );
 }

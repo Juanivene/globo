@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
@@ -23,6 +23,15 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * El navy de la marca también pinta la barra del navegador en el celular, así
+ * el header deja de cortarse contra una franja blanca del sistema y la pantalla
+ * se lee como una sola pieza.
+ */
+export const viewport: Viewport = {
+  themeColor: "#0f1e47",
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -40,7 +49,7 @@ export default function RootLayout({
           position="top-center"
           toastOptions={{
             className: "font-sans",
-            style: { borderRadius: "0.75rem" },
+            style: { borderRadius: "0.875rem" },
           }}
         />
       </body>

@@ -8,48 +8,61 @@ export function Header() {
   return (
     <>
       {/*
-        `site-header` is anchored in globals.css so it stays put while page
-        content slides underneath it — the user keeps one fixed reference point.
+        `site-header` está anclado en globals.css para que quede quieto mientras
+        el contenido se desliza por debajo: el usuario conserva una referencia.
       */}
       <header
         style={{ viewTransitionName: "site-header" }}
-        className="night-panel sticky top-0 z-30 shadow-md"
+        className="night-panel meridians sticky top-0 z-30"
       >
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+        {/*
+          Sombra que aparece sola al bajar. Va por scroll-driven animation sobre
+          la opacidad de una capa (propiedad compuesta por la GPU), no por un
+          listener de scroll: no hay JS escuchando ni trabajo por frame.
+        */}
+        <span
+          aria-hidden
+          className="scroll-shadow pointer-events-none absolute inset-x-0 -bottom-6 h-6 bg-linear-to-b from-bg/25 to-transparent"
+        />
+
+        <div className="shell flex items-center justify-between gap-3 py-3">
           <Link
             href="/"
             transitionTypes={["nav-back"]}
             className="group flex items-center gap-2.5"
           >
-            <span className="relative flex h-9 w-9 items-center justify-center">
-              {/* Gold ring that widens on hover, echoing the logo's orbit. */}
+            <span className="relative flex h-10 w-10 items-center justify-center">
+              {/* Anillo punteado que orbita el globo, como el halo del logo. */}
               <span
                 aria-hidden
-                className="absolute inset-0 rounded-full ring-1 ring-accent/40 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-inset-0.75 group-hover:ring-accent/70"
+                className="absolute -inset-1 rounded-full border border-dashed border-accent/35 transition-[inset,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-inset-1.5 group-hover:border-accent/70 motion-safe:animate-[orbit_40s_linear_infinite]"
               />
               <Image
                 src="/logo.png"
                 alt="Globo Arg"
-                width={36}
-                height={36}
-                className="rounded-full"
+                width={40}
+                height={40}
+                className="rounded-full transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
                 priority
               />
             </span>
-            <span className="font-heading text-xl font-bold tracking-tight text-accent">
-              Globo Arg
+            <span className="font-heading text-xl font-bold tracking-tight text-white">
+              Globo <span className="text-gold-gradient">Arg</span>
             </span>
           </Link>
+
           <HeaderNav className="hidden sm:block" />
           <CartBadge />
         </div>
-        {/* En el celular la navegación baja a su propia fila: el logo, los dos links
-            y el carrito no entran juntos en 360 px. */}
+
+        {/* En el celular la navegación baja a su propia fila: el logo, los dos
+            links y el carrito no entran juntos en 360 px. */}
         <HeaderNav className="flex justify-center px-4 pb-2.5 sm:hidden" />
-        {/* Hairline that ties the header to the gold in the logo. */}
+
+        {/* Hilo dorado que cierra el header, el mismo que abre el footer. */}
         <div
           aria-hidden
-          className="h-px bg-linear-to-r from-transparent via-accent/50 to-transparent"
+          className="h-px bg-linear-to-r from-transparent via-accent/55 to-transparent"
         />
       </header>
 

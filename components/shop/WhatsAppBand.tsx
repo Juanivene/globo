@@ -20,28 +20,31 @@ export function WhatsAppBand() {
   return (
     <section
       aria-label="Contacto por WhatsApp"
-      className="night-panel relative overflow-hidden rounded-2xl p-6 sm:p-8"
+      className="night-panel aurora meridians overflow-hidden rounded-3xl p-6 shadow-(--shadow-panel) sm:p-10"
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full border border-accent/15"
+        className="pointer-events-none absolute -right-24 -top-28 h-72 w-72 rounded-full border border-accent/15"
       />
-      <div className="relative grid gap-6 sm:grid-cols-2 sm:gap-8">
+      <div className="relative grid gap-8 sm:grid-cols-2 sm:gap-10">
         {items.map(({ icon: Icon, title, body, cta, message }, i) => (
           <div
             key={title}
+            style={{ "--i": i } as React.CSSProperties}
             className={
               i > 0
-                ? "flex flex-col items-start gap-3 border-t border-white/15 pt-6 sm:border-l sm:border-t-0 sm:pl-8 sm:pt-0"
-                : "flex flex-col items-start gap-3"
+                ? "reveal-item flex flex-col items-start gap-3 border-t border-white/15 pt-8 sm:border-l sm:border-t-0 sm:pl-10 sm:pt-0"
+                : "reveal-item flex flex-col items-start gap-3"
             }
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/15 text-accent">
-              <Icon size={20} />
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-accent/15 text-accent ring-1 ring-accent/25">
+              <Icon size={21} />
             </span>
             <div>
-              <h2 className="font-heading text-lg font-bold text-white">{title}</h2>
-              <p className="mt-1 text-sm text-white/75">{body}</p>
+              <h2 className="font-heading text-lg font-bold text-white sm:text-xl">
+                {title}
+              </h2>
+              <p className="mt-1.5 text-sm leading-relaxed text-white/70">{body}</p>
             </div>
             <WhatsAppButton message={message} className="mt-auto">
               {cta}

@@ -1,43 +1,45 @@
 @import "tailwindcss";
 
 :root {
-  /* ---- Globo Arg brand tokens — palette "Puerto" ----
-     Verde petróleo + naranja durazno sobre crema. Reemplaza al azul/ciruela
-     anterior: el dorado del logo queda como detalle (brillo) y el CTA pasa a un
-     durazno cálido que es lo más visible de cada pantalla.
+  /* ---- Globo Arg brand tokens — paleta "Órbita" ----
+     Sacada del logo: la Tierra de noche. El azul profundo del océano y el
+     espacio, el oro de las luces de las ciudades (de Norteamérica bajando a
+     Argentina: el viaje que hace cada pedido) y el celeste del halo de la
+     atmósfera. La marca deja de ser "un color de header" y pasa a ser esa
+     escena: lienzo frío y claro para comprar, noche profunda para respirar.
 
      REGLAS DE USO (cada una evita un fallo de contraste medido, WCAG AA 4.5:1):
-       accent  #ffa04d  fondo de CTA con texto --color-primary (5.9:1).
-                        Nunca como texto sobre claro (2.0:1) -> usar bronze.
-       bronze  #a35f1c  la versión de accent apta como TEXTO sobre claro (4.7:1).
-       coral   #ff6b4a  solo fondo decorativo, siempre con texto --color-text (5.3:1).
-       glow    #5fd6c7  solo decorativo sobre superficies OSCURAS. Sobre claro no se ve.
-       link    #0b5d5e  enlaces, foco e iconos de acción sobre claro (7.2:1).
+       accent  #f0b429  fondo de CTA con texto --color-primary (8.7:1).
+                        Nunca como texto sobre claro (1.7:1) -> usar bronze.
+       bronze  #8a5a10  la versión de accent apta como TEXTO sobre claro (5.5:1).
+       glow    #4fd1e8  solo decorativo sobre superficies OSCURAS (10.2:1 sobre
+                        el panel noche). Sobre claro no se ve (1.7:1).
+       link    #12519e  enlaces, foco e iconos de acción sobre claro (7.3:1).
 
      Para cambiar de paleta alcanza con reemplazar los valores de este bloque
      y de --shadow-* (más abajo): ningún componente lleva colores propios. */
-  --color-bg: #0a2b2c;          /* petróleo más profundo — footer */
-  --color-surface: #0f3d3e;
-  --color-surface-light: #fbf7f2; /* lienzo crema */
+  --color-bg: #060c20;            /* espacio profundo — footer, overlays */
+  --color-surface: #0c1638;       /* noche intermedia */
+  --color-surface-light: #f4f7fb; /* lienzo frío — fondo de toda la tienda */
   --color-card: #ffffff;
-  --color-primary: #0f3d3e;     /* petróleo — header, títulos (11.2:1 sobre crema) */
-  --color-primary-light: #1b5658;
-  --color-accent: #ffa04d;
-  --color-accent-hover: #f28c33;
-  --color-bronze: #a35f1c;
-  --color-coral: #ff6b4a;
-  --color-glow: #5fd6c7;
-  --color-whatsapp: #25d366;    /* verde de marca de WhatsApp: fondo de botón con texto --color-primary (6.0:1). Con texto blanco daría 2.0:1. */
+  --color-primary: #0f1e47;       /* navy de marca — títulos (15.1:1 sobre el lienzo) */
+  --color-primary-light: #1c3372;
+  --color-accent: #f0b429;        /* oro de las luces de ciudad */
+  --color-accent-hover: #dfa215;
+  --color-bronze: #8a5a10;
+  --color-glow: #4fd1e8;          /* halo de la atmósfera */
+  --color-whatsapp: #25d366;      /* verde de marca de WhatsApp: fondo de botón con texto --color-primary (8.2:1). Con texto blanco daría 2.2:1. */
   --color-whatsapp-hover: #1fbd5a;
-  --color-link: #0b5d5e;
-  --color-text: #1e2a2a;        /* 13.9:1 sobre crema */
-  --color-text-invert: #fbf7f2;
-  --color-muted: #6b7370;       /* 4.6:1 sobre crema */
-  --color-border: #e7e2d8;
+  --color-link: #12519e;
+  --color-text: #16203d;          /* 14.9:1 sobre el lienzo */
+  --color-text-invert: #f4f7fb;
+  --color-muted: #5b6784;         /* 5.2:1 sobre el lienzo, 5.6:1 sobre blanco */
+  --color-border: #dfe5f0;
 
-  /* ---- Motion tokens: one vocabulary for the whole shop ---- */
+  /* ---- Motion tokens: un solo vocabulario para toda la tienda ---- */
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out-soft: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --duration-exit: 150ms;
   --duration-enter: 210ms;
   --duration-move: 400ms;
@@ -53,7 +55,6 @@
   --color-accent: var(--color-accent);
   --color-accent-hover: var(--color-accent-hover);
   --color-bronze: var(--color-bronze);
-  --color-coral: var(--color-coral);
   --color-glow: var(--color-glow);
   --color-link: var(--color-link);
   --color-whatsapp: var(--color-whatsapp);
@@ -66,15 +67,16 @@
   --font-heading: var(--font-space-grotesk);
   --font-sans: var(--font-inter);
 
-  /* Elevación firma: teñida con el petróleo, nunca un gris duro */
-  --shadow-card: 0 1px 2px rgba(30, 42, 42, 0.04), 0 4px 16px rgba(15, 61, 62, 0.07);
-  --shadow-card-hover: 0 2px 4px rgba(30, 42, 42, 0.05), 0 14px 32px rgba(15, 61, 62, 0.15);
-  --shadow-drawer: -8px 0 40px rgba(10, 43, 44, 0.22);
-  --shadow-accent: 0 2px 10px rgba(255, 160, 77, 0.38);
-  --shadow-accent-hover: 0 6px 20px rgba(255, 160, 77, 0.5);
-  --shadow-chip-active: 0 4px 12px rgba(15, 61, 62, 0.28);
-  --shadow-ring-accent: 0 0 0 4px rgba(255, 160, 77, 0.25);
-  --shadow-option-active: 0 2px 10px rgba(255, 160, 77, 0.25);
+  /* Elevación firma: teñida con el navy, nunca un gris duro */
+  --shadow-card: 0 1px 2px rgba(22, 32, 61, 0.04), 0 4px 16px rgba(15, 30, 71, 0.06);
+  --shadow-card-hover: 0 2px 6px rgba(22, 32, 61, 0.06), 0 18px 40px rgba(15, 30, 71, 0.16);
+  --shadow-drawer: -8px 0 44px rgba(6, 12, 32, 0.28);
+  --shadow-accent: 0 2px 10px rgba(240, 180, 41, 0.35);
+  --shadow-accent-hover: 0 8px 24px rgba(240, 180, 41, 0.48);
+  --shadow-chip-active: 0 4px 14px rgba(15, 30, 71, 0.3);
+  --shadow-ring-accent: 0 0 0 4px rgba(240, 180, 41, 0.25);
+  --shadow-option-active: 0 2px 12px rgba(240, 180, 41, 0.22);
+  --shadow-panel: 0 24px 60px rgba(6, 12, 32, 0.18);
 
   --animate-rise: rise 0.55s var(--ease-out-soft) both;
   --animate-fade-in: fade-in 0.4s var(--ease-out-soft) both;
@@ -87,20 +89,33 @@ body {
   background: var(--color-surface-light);
   color: var(--color-text);
   font-family: var(--font-sans), system-ui, sans-serif;
+  /* El lienzo lleva un rastro tenue del halo del logo, para que el blanco de
+     las tarjetas tenga de dónde despegarse. */
+  background-image:
+    radial-gradient(60rem 40rem at 50% -10rem, rgba(79, 209, 232, 0.1), transparent 70%),
+    radial-gradient(45rem 30rem at 110% 30rem, rgba(240, 180, 41, 0.07), transparent 70%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading), system-ui, sans-serif;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
 }
 
 /* ===================================================================
    Keyframes
    =================================================================== */
 
+/* Las entradas animan `translate`/`scale`, nunca `transform`.
+   Una animación con fill `both` se queda pegada al valor final y le gana a
+   cualquier declaración normal: si animara `transform`, el `transform` del
+   hover de las tarjetas quedaría anulado para siempre y no se levantarían
+   nunca. Como `translate` y `scale` son propiedades aparte, se componen con
+   el `transform` del hover en vez de pisarlo. */
 @keyframes rise {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; translate: 0 14px; }
+  to   { opacity: 1; translate: 0 0; }
 }
 
 @keyframes fade-in {
@@ -138,31 +153,140 @@ h1, h2, h3, h4, h5, h6 {
   to   { translate: 0; }
 }
 
-/* Indeterminate progress sweep, used for inline link-pending feedback. */
+/* Barrido de progreso indeterminado, para el feedback inline de los links. */
 @keyframes indeterminate {
   from { transform: translateX(-100%); }
   to   { transform: translateX(400%); }
 }
 
+/* Entrada ligada al scroll (ver la utilidad `reveal`). */
+@keyframes reveal-rise {
+  from { opacity: 0; translate: 0 26px; scale: 0.985; }
+  to   { opacity: 1; translate: 0 0; scale: 1; }
+}
+
+/* Deriva lentísima de los halos del panel noche. Solo transform: la compone la
+   GPU y no toca el layout, así que en un gama media no cuesta nada. */
+@keyframes drift-a {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(4%, 3%, 0); }
+}
+@keyframes drift-b {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(-5%, -2%, 0); }
+}
+
+/* Órbita de los anillos del hero: una vuelta cada 40s, apenas perceptible. */
+@keyframes orbit {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* La ruta punteada del hero, avanzando despacio de Norteamérica al sur. */
+@keyframes dash-travel {
+  to { stroke-dashoffset: -140; }
+}
+
+/* Halo que late una sola vez alrededor del ícono de confirmación. */
+@keyframes ping-ring {
+  0%   { opacity: 0.6; transform: scale(0.85); }
+  100% { opacity: 0; transform: scale(2.1); }
+}
+
 /* ===================================================================
-   Signature utilities — the shop's repeatable visual language
+   Utilidades firma — el lenguaje visual repetible de la tienda
    =================================================================== */
 
-/* Every content surface in the shop uses this one card recipe. */
+/* Un solo ancho de contenido para header, contenido y footer. */
+@utility shell {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 80rem;
+  padding-inline: 1rem;
+
+  @media (width >= 40rem) { padding-inline: 1.5rem; }
+  @media (width >= 64rem) { padding-inline: 2rem; }
+}
+
+/* Toda superficie de contenido de la tienda usa esta misma receta. */
 @utility card-globo {
   background: var(--color-card);
   border: 1px solid var(--color-border);
-  border-radius: 1rem;
+  border-radius: 1.25rem;
   box-shadow: var(--shadow-card);
 }
 
-/* Staggered entrance. `--i` is set inline per item by the grid. */
+/* Levantar al pasar por encima. Separado de `card-globo` porque las tarjetas
+   que no son clickeables no deberían moverse. */
+@utility card-lift {
+  transition:
+    transform 0.35s var(--ease-out-soft),
+    box-shadow 0.35s var(--ease-out-soft),
+    border-color 0.35s var(--ease-out-soft);
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card-hover);
+    border-color: color-mix(in srgb, var(--color-primary) 22%, transparent);
+  }
+  &:active {
+    transform: translateY(-1px) scale(0.995);
+  }
+}
+
+/* Entrada escalonada por tiempo. `--i` se setea inline en cada ítem.
+   Se usa arriba del pliegue (hero, ficha de producto), donde el contenido ya
+   está a la vista al cargar; más abajo manda `reveal`, que va con el scroll. */
 @utility stagger-rise {
   animation: rise 0.55s var(--ease-out-soft) both;
   animation-delay: calc(var(--i, 0) * 55ms);
 }
 
-/* Gold sheen that sweeps across primary buttons on hover/focus. */
+/* ---- Entradas ligadas al scroll ----
+   Van con una scroll-driven animation del navegador, no con JavaScript: corren
+   fuera del hilo principal, no cuestan un byte de JS y no pueden retrasar un
+   tap. Donde no existen (Firefox hoy) el @supports no aplica y el contenido se
+   ve normal, quieto: el sitio nunca queda en blanco esperando una animación. */
+@utility reveal {
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: reveal-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 60%;
+    }
+  }
+}
+
+/* Igual que `reveal`, pero cada hijo entra un poco después que el anterior: en
+   vez de un retardo fijo corre su tramo de scroll un poco más tarde. */
+@utility reveal-item {
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: reveal-rise linear both;
+      animation-timeline: view();
+      animation-range: entry calc(var(--i, 0) * 4%) entry calc(55% + var(--i, 0) * 4%);
+    }
+  }
+}
+
+/* Capa que aparece sola a medida que la página baja: la usa el header para
+   ganar sombra recién cuando hay contenido detrás.
+
+   El orden de las declaraciones importa: el atajo `animation` resetea
+   `animation-timeline`, así que la línea de tiempo se fija después. */
+@utility scroll-shadow {
+  opacity: 0;
+
+  @supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: fade-in 1s linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 100px;
+    }
+  }
+}
+
+/* Destello dorado que barre los botones principales al hacer hover/foco. */
 @utility sheen {
   position: relative;
   overflow: hidden;
@@ -188,23 +312,75 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-/* Panel de marca compartido por header, hero y footer: petróleo con un brillo
-   durazno en una esquina y menta en la otra (los dos colores de acento). */
+/* Panel de marca compartido por header, hero, franjas y footer: la escena del
+   logo. Espacio navy, las luces doradas arriba a la izquierda (Norteamérica) y
+   el halo celeste de la atmósfera abajo a la derecha. */
 @utility night-panel {
+  position: relative;
+  isolation: isolate;
   background:
     radial-gradient(120% 140% at 12% 0%, var(--color-primary-light) 0%, transparent 55%),
-    radial-gradient(85% 110% at 92% 8%, rgba(255, 160, 77, 0.24) 0%, transparent 55%),
-    radial-gradient(90% 120% at 100% 100%, rgba(95, 214, 199, 0.26) 0%, transparent 60%),
+    radial-gradient(85% 110% at 88% 6%, rgba(240, 180, 41, 0.22) 0%, transparent 55%),
+    radial-gradient(90% 120% at 100% 100%, rgba(79, 209, 232, 0.24) 0%, transparent 60%),
     var(--color-primary);
+  color: var(--color-text-invert);
 }
 
-/* Loading placeholder with a brand tint instead of a generic grey pulse. */
+/* Las dos luces del panel, animadas: dos capas que derivan lentísimo, como si
+   el planeta girara detrás del contenido. Solo donde se pide (`aurora`),
+   porque en el header sticky no aportaría y sí gastaría. */
+@utility aurora {
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -30%;
+    z-index: -1;
+    pointer-events: none;
+  }
+  &::before {
+    background: radial-gradient(38% 38% at 22% 28%, rgba(240, 180, 41, 0.3), transparent 70%);
+  }
+  &::after {
+    background: radial-gradient(42% 42% at 78% 72%, rgba(79, 209, 232, 0.28), transparent 70%);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    &::before { animation: drift-a 26s var(--ease-in-out-soft) infinite; }
+    &::after  { animation: drift-b 34s var(--ease-in-out-soft) infinite; }
+  }
+}
+
+/* Textura de meridianos: las líneas de longitud del globo, tan tenues que se
+   leen como grano y no como una grilla. */
+@utility meridians {
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.035) 0 1px,
+      transparent 1px 112px
+    );
+}
+
+/* Un gradiente dorado usado como color de texto, para la palabra destacada del
+   título. Cae a `--color-accent` sólido donde no haya soporte. */
+@utility text-gold-gradient {
+  color: var(--color-accent);
+
+  @supports (background-clip: text) {
+    background: linear-gradient(100deg, var(--color-accent) 0%, #ffe9a8 45%, var(--color-accent) 100%);
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+/* Placeholder de carga con el tinte de la marca en vez de un gris genérico. */
 @utility skeleton {
   background: linear-gradient(
     90deg,
-    rgba(15, 61, 62, 0.07) 0%,
-    rgba(15, 61, 62, 0.13) 50%,
-    rgba(15, 61, 62, 0.07) 100%
+    rgba(15, 30, 71, 0.07) 0%,
+    rgba(15, 30, 71, 0.14) 50%,
+    rgba(15, 30, 71, 0.07) 100%
   );
   animation: shimmer 1.6s ease-in-out infinite;
 }
@@ -213,13 +389,13 @@ h1, h2, h3, h4, h5, h6 {
    View transitions
    =================================================================== */
 
-/* Let clicks reach the live page while a transition is still running, so no
-   animation can ever delay a "Agregar al carrito" tap. */
+/* Dejar que los clicks lleguen a la página viva mientras una transición sigue
+   corriendo, para que ninguna animación pueda demorar un "Agregar al carrito". */
 ::view-transition {
   pointer-events: none;
 }
 
-/* --- Shared element: the product image morphs thumbnail -> detail hero --- */
+/* --- Elemento compartido: la foto del producto muta de miniatura a portada --- */
 ::view-transition-group(.morph) {
   animation-duration: var(--duration-move);
   animation-timing-function: var(--ease-out-soft);
@@ -231,7 +407,7 @@ h1, h2, h3, h4, h5, h6 {
   30% { filter: blur(3px); }
 }
 
-/* --- Suspense reveal: the skeleton hands off to real content --- */
+/* --- Revelado de Suspense: el skeleton le pasa la posta al contenido real --- */
 ::view-transition-old(.slide-down) {
   animation:
     var(--duration-exit) ease-out both fade reverse,
@@ -243,7 +419,7 @@ h1, h2, h3, h4, h5, h6 {
     var(--duration-move) ease-in both slide-y;
 }
 
-/* --- Directional navigation --- */
+/* --- Navegación direccional --- */
 ::view-transition-old(.nav-forward) {
   --slide-offset: -60px;
   animation:
@@ -269,7 +445,7 @@ h1, h2, h3, h4, h5, h6 {
     var(--duration-move) var(--ease-in-out-soft) both slide-x;
 }
 
-/* Anchor the header so the user keeps one fixed spatial reference. */
+/* Anclar el header para que el usuario conserve una referencia espacial fija. */
 ::view-transition-group(site-header) {
   animation: none;
   z-index: 100;
@@ -278,7 +454,7 @@ h1, h2, h3, h4, h5, h6 {
 ::view-transition-new(site-header) { animation: none; }
 
 /* ===================================================================
-   Accessibility — motion is decoration here, never the message
+   Accesibilidad — acá el movimiento es decoración, nunca el mensaje
    =================================================================== */
 
 @media (prefers-reduced-motion: reduce) {
@@ -300,16 +476,16 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-/* Visible, on-brand focus ring for keyboard users across the whole shop.
-   No border-radius here on purpose: the outline already follows each element's
-   own radius, and setting one would reshape rounded buttons on focus. */
+/* Foco visible y de marca para quien navega con teclado, en toda la tienda.
+   Sin border-radius acá a propósito: el outline ya sigue el radio de cada
+   elemento, y fijar uno deformaría los botones redondeados al enfocarlos. */
 :focus-visible {
   outline: 2px solid var(--color-link);
   outline-offset: 2px;
 }
 
-/* On the dark panels the deep teal would disappear, so the bright halo cyan
-   takes over there. */
+/* Sobre los paneles oscuros el azul se perdería, así que ahí toma el relevo el
+   celeste del halo. */
 .night-panel :focus-visible {
   outline-color: var(--color-glow);
 }

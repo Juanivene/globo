@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { CatalogControls } from "@/components/shop/CatalogControls";
 import { CatalogResults } from "@/components/shop/CatalogResults";
 import { PageTransition } from "@/components/shop/PageTransition";
+import { SectionHeading } from "@/components/shop/SectionHeading";
 import { WhatsAppBand } from "@/components/shop/WhatsAppBand";
 import { ProductGridSkeleton } from "@/components/ui/Skeleton";
 
@@ -25,9 +26,11 @@ export default async function ProductsPage({
   return (
     <PageTransition>
       <div className="space-y-6">
-        <h1 className="animate-rise font-heading text-2xl font-bold text-primary sm:text-3xl">
-          Productos
-        </h1>
+        <SectionHeading
+          as="h1"
+          eyebrow="Catálogo"
+          title="Todos los productos"
+        />
 
         <CatalogControls
           sections={sections.map((s) => ({ slug: s.slug, name: s.name }))}
@@ -46,7 +49,7 @@ export default async function ProductsPage({
           }
         >
           <ViewTransition enter="slide-up" default="none">
-            <CatalogResults q={q} seccion={seccion} />
+            <CatalogResults q={q} seccion={seccion} showCount />
           </ViewTransition>
         </Suspense>
 

@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { toast } from "sonner";
-import { MessageCircle, CreditCard, Loader2, Truck } from "lucide-react";
+import { MessageCircle, CreditCard, Loader2, Truck, Lock } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Input";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -143,15 +144,9 @@ export function CheckoutForm() {
       <form onSubmit={handleSubmit} className="space-y-5">
         <CheckoutProgress done={stepsDone} />
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          <div className="space-y-5 lg:col-span-2">
-            <section
-              style={{ "--i": 0 } as React.CSSProperties}
-              className="stagger-rise card-globo p-5"
-            >
-              <h2 className="mb-4 font-heading text-lg font-semibold text-primary">
-                Tus datos
-              </h2>
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_23rem] lg:items-start lg:gap-8">
+          <div className="space-y-5">
+            <FormSection step={1} title="Tus datos" index={0}>
               <div className="space-y-4">
                 <div>
                   <Label>Nombre completo</Label>
@@ -193,6 +188,11 @@ export function CheckoutForm() {
                     placeholder="Calle, número, piso/depto"
                   />
                 </div>
+              </div>
+            </FormSection>
+
+            <FormSection step={2} title="Envío" index={1}>
+              <div className="space-y-4">
                 <div>
                   <Label>Código postal</Label>
                   <div className="max-w-40">
@@ -208,8 +208,9 @@ export function CheckoutForm() {
                     />
                   </div>
 
-                  {/* Reserved slot, so the layout never jumps as the quote resolves. */}
-                  <div className="mt-2 min-h-5 text-xs">
+                  {/* Hueco reservado, para que el layout no salte cuando llega
+                      la cotización. */}
+                  <div className="mt-2.5 min-h-6 text-xs">
                     {quoting && (
                       <span className="animate-fade-in flex items-center gap-1.5 text-muted">
                         <Truck size={13} className="text-bronze" />
@@ -221,9 +222,10 @@ export function CheckoutForm() {
                       <span className="animate-fade-in text-red-600">{shippingError}</span>
                     )}
                     {!quoting && !shippingError && shippingCost !== null && (
-                      <span className="animate-fade-in text-muted">
+                      <span className="animate-fade-in inline-flex items-center gap-1.5 rounded-full bg-accent/12 px-2.5 py-1 text-bronze">
+                        <Truck size={13} />
                         Envío a CP {postalCode}:{" "}
-                        <strong className="font-semibold text-primary">
+                        <strong className="font-bold tabular-nums">
                           {formatCurrency(shippingCost)}
                         </strong>
                       </span>
@@ -231,52 +233,68 @@ export function CheckoutForm() {
                   </div>
                 </div>
               </div>
-            </section>
+            </FormSection>
 
-            <section
-              style={{ "--i": 1 } as React.CSSProperties}
-              className="stagger-rise card-globo p-5"
-            >
-              <h2 className="mb-4 font-heading text-lg font-semibold text-primary">
-                Método de pago
-              </h2>
-              <div className="space-y-2">
+            <FormSection step={3} title="Método de pago" index={2}>
+              <div className="space-y-2.5">
                 <PaymentOption
                   checked={paymentMethod === "MERCADO_PAGO"}
                   onSelect={() => setPaymentMethod("MERCADO_PAGO")}
-                  icon={<CreditCard size={18} />}
+                  icon={<CreditCard size={19} />}
                   title="Mercado Pago"
                   description="Pagás online, todas las tarjetas y medios disponibles."
                 />
                 <PaymentOption
                   checked={paymentMethod === "TRANSFERENCIA"}
                   onSelect={() => setPaymentMethod("TRANSFERENCIA")}
-                  icon={<MessageCircle size={18} />}
+                  icon={<MessageCircle size={19} />}
                   title="Transferencia"
                   description="Coordinás el pago por WhatsApp con nosotros."
                 />
               </div>
-            </section>
+            </FormSection>
           </div>
 
           <section
-            style={{ "--i": 2 } as React.CSSProperties}
+            style={{ "--i": 3 } as React.CSSProperties}
             className="stagger-rise card-globo h-fit space-y-4 p-5 lg:sticky lg:top-24"
           >
-            <h2 className="font-heading text-lg font-semibold text-primary">Resumen</h2>
-            <ul className="space-y-2 text-sm">
+            <h2 className="font-heading text-lg font-bold text-primary">Resumen</h2>
+
+            <ul className="space-y-3">
               {items.map((i) => (
-                <li key={i.productId} className="flex justify-between gap-3 text-muted">
-                  <span className="line-clamp-1">
-                    {i.title} x{i.quantity}
+                <li key={i.productId} className="flex items-center gap-3">
+                  <span className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-primary/5">
+                    {i.imageUrl ? (
+                      <Image
+                        src={i.imageUrl}
+                        alt=""
+                        fill
+                        className="object-cover"
+                        sizes="44px"
+                      />
+                    ) : (
+                      <span className="flex h-full items-center justify-center text-base">
+                        🎁
+                      </span>
+                    )}
+                    {/* La cantidad va sobre la miniatura: se lee de un vistazo
+                        sin robarle una columna a la lista. */}
+                    <span className="absolute -right-1 -top-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white tabular-nums">
+                      {i.quantity}
+                    </span>
                   </span>
-                  <span className="shrink-0 tabular-nums">
+                  <span className="line-clamp-2 min-w-0 flex-1 text-xs text-muted">
+                    {i.title}
+                  </span>
+                  <span className="shrink-0 text-xs font-semibold text-text tabular-nums">
                     {formatCurrency(i.price * i.quantity)}
                   </span>
                 </li>
               ))}
             </ul>
-            <div className="space-y-1 border-t border-border pt-3 text-sm">
+
+            <div className="space-y-1.5 border-t border-border pt-3 text-sm">
               <div className="flex justify-between text-muted">
                 <span>Subtotal</span>
                 <span className="tabular-nums">{formatCurrency(subtotal)}</span>
@@ -293,16 +311,21 @@ export function CheckoutForm() {
                   </span>
                 )}
               </div>
-              <div className="flex justify-between font-heading text-base font-semibold text-text">
-                <span>Total</span>
-                <span key={total ?? "empty"} className="animate-fade-in tabular-nums">
-                  {total !== null ? formatCurrency(total) : "—"}
-                </span>
-              </div>
             </div>
+
+            <div className="flex items-baseline justify-between border-t border-border pt-3">
+              <span className="font-heading text-base font-semibold text-text">Total</span>
+              <span
+                key={total ?? "empty"}
+                className="animate-fade-in font-heading text-2xl font-bold text-primary tabular-nums"
+              >
+                {total !== null ? formatCurrency(total) : "—"}
+              </span>
+            </div>
+
             <Button
               type="submit"
-              className="sheen w-full transition-transform active:scale-[0.98]"
+              className="sheen w-full transition-transform hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
               size="lg"
               disabled={submitting}
             >
@@ -314,7 +337,8 @@ export function CheckoutForm() {
                 "Confirmar pedido"
               )}
             </Button>
-            <p className="text-center text-xs text-muted">
+            <p className="flex items-center justify-center gap-1.5 text-center text-xs text-muted">
+              <Lock size={12} />
               No se te cobra nada hasta confirmar el pago.
             </p>
           </section>
@@ -323,6 +347,40 @@ export function CheckoutForm() {
 
       {redirecting && <MercadoPagoRedirectOverlay />}
     </>
+  );
+}
+
+/**
+ * Bloque del formulario con su número de paso.
+ *
+ * El número repite el del riel de progreso de arriba: los mismos tres pasos,
+ * los mismos tres números, así el riel deja de ser un adorno y se vuelve un
+ * índice de lo que sigue en la página.
+ */
+function FormSection({
+  step,
+  title,
+  index,
+  children,
+}: {
+  step: number;
+  title: string;
+  index: number;
+  children: React.ReactNode;
+}) {
+  return (
+    <section
+      style={{ "--i": index } as React.CSSProperties}
+      className="stagger-rise card-globo p-5"
+    >
+      <h2 className="mb-4 flex items-center gap-2.5 font-heading text-lg font-semibold text-primary">
+        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-white tabular-nums">
+          {step}
+        </span>
+        {title}
+      </h2>
+      {children}
+    </section>
   );
 }
 
@@ -341,10 +399,10 @@ function PaymentOption({
 }) {
   return (
     <label
-      className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+      className={`flex cursor-pointer items-center gap-3.5 rounded-xl border p-3.5 transition-[border-color,background-color,box-shadow] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] ${
         checked
-          ? "border-accent bg-accent/10 shadow-(--shadow-option-active)"
-          : "border-border hover:border-primary/30 hover:bg-black/2"
+          ? "border-accent bg-accent/8 shadow-(--shadow-option-active)"
+          : "border-border hover:border-primary/30 hover:bg-primary/3"
       }`}
     >
       <input
@@ -352,19 +410,33 @@ function PaymentOption({
         name="paymentMethod"
         checked={checked}
         onChange={onSelect}
-        className="accent-accent"
+        className="sr-only"
       />
+      {/* Radio dibujado a mano: el nativo no se puede teñir con el oro de la
+          marca de forma consistente entre navegadores. */}
+      <span
+        aria-hidden
+        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors duration-200 ${
+          checked ? "border-accent" : "border-border"
+        }`}
+      >
+        <span
+          className={`h-2.5 w-2.5 rounded-full bg-accent transition-transform duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+            checked ? "scale-100" : "scale-0"
+          }`}
+        />
+      </span>
       <span
         className={`transition-colors duration-200 ${
-          checked ? "text-bronze" : "text-primary"
+          checked ? "text-bronze" : "text-muted"
         }`}
       >
         {icon}
       </span>
-      <div>
-        <p className="text-sm font-medium text-text">{title}</p>
-        <p className="text-xs text-muted">{description}</p>
-      </div>
+      <span>
+        <span className="block text-sm font-semibold text-text">{title}</span>
+        <span className="block text-xs text-muted">{description}</span>
+      </span>
     </label>
   );
 }
@@ -376,14 +448,14 @@ function PaymentOption({
 function MercadoPagoRedirectOverlay() {
   return (
     <div
-      className="animate-fade-in fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-bg/80 backdrop-blur-sm"
+      className="animate-fade-in fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-bg/85 backdrop-blur-sm"
       role="status"
       aria-live="polite"
     >
-      <span className="relative flex h-14 w-14 items-center justify-center">
+      <span className="relative flex h-16 w-16 items-center justify-center">
         <span className="absolute inset-0 rounded-full border-2 border-accent/25" />
         <span className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-accent" />
-        <CreditCard size={20} className="text-accent" />
+        <CreditCard size={22} className="text-accent" />
       </span>
       <div className="text-center">
         <p className="font-heading text-base font-semibold text-white">
@@ -399,20 +471,31 @@ function MercadoPagoRedirectOverlay() {
 
 function CheckoutFormSkeleton() {
   return (
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-3" role="status" aria-label="Cargando checkout">
-      <div className="space-y-5 lg:col-span-2">
-        {[0, 1].map((i) => (
-          <div key={i} style={{ "--i": i } as React.CSSProperties} className="stagger-rise card-globo space-y-4 p-5">
-            <Skeleton className="h-5 w-32" />
+    <div
+      className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_23rem] lg:items-start lg:gap-8"
+      role="status"
+      aria-label="Cargando checkout"
+    >
+      <div className="space-y-5">
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            style={{ "--i": i } as React.CSSProperties}
+            className="stagger-rise card-globo space-y-4 p-5"
+          >
+            <Skeleton className="h-6 w-40" />
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-2/3" />
           </div>
         ))}
       </div>
-      <div style={{ "--i": 2 } as React.CSSProperties} className="stagger-rise card-globo h-fit space-y-3 p-5">
-        <Skeleton className="h-5 w-24" />
-        <Skeleton className="h-4 w-full" />
+      <div
+        style={{ "--i": 3 } as React.CSSProperties}
+        className="stagger-rise card-globo h-fit space-y-3 p-5"
+      >
+        <Skeleton className="h-6 w-24" />
+        <Skeleton className="h-11 w-full" />
         <Skeleton className="h-4 w-full" />
         <Skeleton className="h-12 w-full rounded-xl" />
       </div>

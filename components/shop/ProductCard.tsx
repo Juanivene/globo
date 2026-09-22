@@ -1,6 +1,7 @@
 import { ViewTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { ArrowUpRight } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { CardPendingHint } from "@/components/shop/CardPendingHint";
 
@@ -12,11 +13,19 @@ export interface ProductCardData {
   imageUrl?: string;
 }
 
-/** Shared name for the thumbnail -> hero morph. Also used by the detail page. */
+/** Nombre compartido para el morph miniatura -> portada. Lo usa también la ficha. */
 export function productImageTransitionName(slug: string) {
   return `product-image-${slug}`;
 }
 
+/**
+ * Tarjeta de producto.
+ *
+ * La jerarquía va foto -> precio -> título, no al revés: en una grilla lo que
+ * decide si alguien entra a la ficha es cuánto sale, así que el precio se lee
+ * grande, en el tipo de los títulos y con cifras de ancho fijo. El título
+ * queda en dos líneas como dato de apoyo.
+ */
 export function ProductCard({
   product,
   index = 0,
@@ -29,9 +38,9 @@ export function ProductCard({
       href={`/productos/${product.slug}`}
       transitionTypes={["nav-forward"]}
       style={{ "--i": index } as React.CSSProperties}
-      className="stagger-rise card-globo group relative block overflow-hidden transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:shadow-(--shadow-card-hover) active:translate-y-0 active:scale-[0.99]"
+      className="reveal-item card-globo card-lift group relative flex flex-col overflow-hidden"
     >
-      <div className="relative aspect-square overflow-hidden bg-black/5">
+      <div className="relative aspect-square overflow-hidden bg-primary/5">
         {product.imageUrl ? (
           <ViewTransition
             name={productImageTransitionName(product.slug)}
@@ -42,7 +51,7 @@ export function ProductCard({
               src={product.imageUrl}
               alt={product.title}
               fill
-              className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
+              className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-107"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             />
           </ViewTransition>
@@ -50,21 +59,33 @@ export function ProductCard({
           <div className="flex h-full items-center justify-center text-4xl">🎁</div>
         )}
 
-        {/* Warm scrim that deepens on hover, so the card feels lit from below. */}
+        {/* Velo navy que sube desde abajo al pasar por encima, para que el
+            botón dorado tenga sobre qué apoyarse. */}
         <div
           aria-hidden
-          className="absolute inset-x-0 bottom-0 h-16 bg-linear-to-t from-primary/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+          className="absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-primary/55 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
         />
+
+        {/* Afordancia de "entrar": aparece deslizándose desde abajo. En touch no
+            hay hover, y no hace falta: toda la tarjeta es el link. */}
+        <span
+          aria-hidden
+          className="absolute bottom-3 right-3 flex h-9 w-9 translate-y-3 items-center justify-center rounded-full bg-accent text-primary opacity-0 shadow-(--shadow-accent) transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-0 group-hover:opacity-100"
+        >
+          <ArrowUpRight size={18} />
+        </span>
       </div>
 
-      <div className="p-3">
-        <h3 className="line-clamp-2 text-sm font-medium text-text">{product.title}</h3>
-        <p className="mt-1 font-heading text-base font-semibold text-primary tabular-nums">
+      <div className="flex flex-1 flex-col gap-1 p-3.5">
+        <p className="font-heading text-lg font-bold text-primary tabular-nums">
           {formatCurrency(product.price)}
         </p>
+        <h3 className="line-clamp-2 text-sm leading-snug text-muted transition-colors duration-200 group-hover:text-text">
+          {product.title}
+        </h3>
       </div>
 
-      {/* Immediate feedback on tap while the product page loads. */}
+      {/* Feedback inmediato al tocar, mientras carga la ficha del producto. */}
       <CardPendingHint />
     </Link>
   );
