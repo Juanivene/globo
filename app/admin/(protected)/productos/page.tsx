@@ -35,8 +35,12 @@ export default async function AdminProductsPage({
   ]);
 
   const rows = products.map((p) => ({
-    ...p,
+    id: p.id,
+    title: p.title,
     price: p.price.toString(),
+    enabled: p.enabled,
+    images: p.images.map((i) => ({ url: i.url })),
+    sections: p.sections.map((s) => ({ section: { name: s.section.name } })),
   }));
 
   return (

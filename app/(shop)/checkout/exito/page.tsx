@@ -7,6 +7,7 @@ import { confirmDraftFromPayment } from "@/lib/checkout/confirmMercadoPagoPaymen
 import { formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { PageTransition } from "@/components/shop/PageTransition";
+import { ClearCartOnMount } from "@/components/shop/ClearCartOnMount";
 import type { Order, OrderItem } from "@/app/generated/prisma/client";
 
 function buildWhatsappLink(order: {
@@ -127,6 +128,7 @@ export default async function CheckoutSuccessPage({
 
   return (
     <PageTransition>
+      {!isTransfer && <ClearCartOnMount />}
       <div className="mx-auto max-w-lg">
         <div className="card-globo relative overflow-hidden p-8 text-center">
           {/* Soft green wash behind the confirmation mark. */}

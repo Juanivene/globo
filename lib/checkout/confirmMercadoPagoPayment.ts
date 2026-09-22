@@ -48,7 +48,15 @@ export async function confirmDraftFromPayment(
   }
 
   if (payment.status !== "approved") {
-    if (draft.status === "PENDING") {
+    // Solo un rechazo/cancelación es definitivo. "pending", "in_process" o
+    // "authorized" (revisión manual de la tarjeta) pueden terminar aprobándose
+    // más tarde, así que el draft se deja PENDING para el próximo webhook.
+    const isFinalFailure =
+      payment.status === "rejected" ||
+      payment.status === "cancelled" ||
+      payment.status === "refunded" ||
+      payment.status === "charged_back";
+    if (isFinalFailure && draft.status === "PENDING") {
       await prisma.checkoutDraft.update({
         where: { id: draft.id },
         data: { status: "FAILED" },
@@ -57,10 +65,20 @@ export async function confirmDraftFromPayment(
     return null;
   }
 
+  const expectedTotal = Number((draft.payload as unknown as CheckoutDraftPayload).total);
+  if (Math.abs(Number(payment.transaction_amount) - expectedTotal) > 0.01) {
+    console.error(
+      `MercadoPago payment ${payment.id} amount ${payment.transaction_amount} does not match draft ${draft.id} total ${expectedTotal}`
+    );
+    return null;
+  }
+
   // Conditional update guards against a concurrent call (webhook + success
-  // page fallback racing) creating the order twice.
+  // page fallback racing) creating the order twice. FAILED también se puede
+  // reclamar: el usuario puede reintentar con otra tarjeta sobre la misma
+  // preferencia después de un rechazo, y ese pago aprobado debe generar pedido.
   const claimed = await prisma.checkoutDraft.updateMany({
-    where: { id: draft.id, status: "PENDING" },
+    where: { id: draft.id, status: { in: ["PENDING", "FAILED"] } },
     data: { status: "CONFIRMED" },
   });
 

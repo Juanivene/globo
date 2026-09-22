@@ -83,8 +83,29 @@ export async function DELETE(
   });
   if (!product) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
 
-  await Promise.all(product.images.map((img) => deleteR2Object(img.key)));
-  await prisma.product.delete({ where: { id } });
+  // Un fallo al borrar en R2 (credenciales, bucket, objeto ya inexistente) no
+  // debe impedir borrar el producto en la base de datos — solo lo logueamos.
+  const results = await Promise.allSettled(
+    product.images.map((img) => deleteR2Object(img.key))
+  );
+  results.forEach((result, i) => {
+    if (result.status === "rejected") {
+      console.error(
+        `Error al borrar imagen ${product.images[i].key} de R2:`,
+        result.reason
+      );
+    }
+  });
+
+  try {
+    await prisma.product.delete({ where: { id } });
+  } catch (err) {
+    console.error(`Error al borrar producto ${id}:`, err);
+    return NextResponse.json(
+      { error: "No se pudo eliminar el producto" },
+      { status: 500 }
+    );
+  }
 
   return NextResponse.json({ ok: true });
 }

@@ -50,6 +50,11 @@ export async function POST(req: NextRequest) {
           email: payload.customerEmail,
           phone: { number: payload.customerPhone },
         },
+        // Solo tarjetas y dinero en cuenta: efectivo y transferencia quedan
+        // "pending" por horas o días, y el flujo asume una respuesta inmediata.
+        payment_methods: {
+          excluded_payment_types: [{ id: "ticket" }, { id: "atm" }, { id: "bank_transfer" }],
+        },
         external_reference: draft.id,
         back_urls: {
           success: `${baseUrl}/checkout/exito?draftId=${draft.id}`,
