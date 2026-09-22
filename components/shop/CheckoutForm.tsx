@@ -104,7 +104,7 @@ export function CheckoutForm() {
         if (!mpRes.ok || !mpData.initPoint) {
           throw new Error(mpData.error ?? "No se pudo iniciar el pago con Mercado Pago");
         }
-        clear();
+        // El carrito se vacía en la página de éxito, una vez confirmado el pago.
         window.location.href = mpData.initPoint;
         return;
       }
